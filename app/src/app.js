@@ -12,6 +12,10 @@
   const today = () => E.dayKey();
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
   const seed = () => Math.floor(Math.random() * 2 ** 31);
+  /** Product analytics. Only the public website loads PostHog (see site.mjs); elsewhere this does nothing. */
+  function track(event, props = {}) {
+    try { if (window.posthog && typeof window.posthog.capture === "function") window.posthog.capture(event, props); } catch { /* analytics must never break the app */ }
+  }
 
   // ---------- icons ----------
   const I = {
@@ -206,6 +210,7 @@
     { id: "me", label: "Me", icon: I.helmet },
   ].filter(Boolean);
   function setTab(id) {
+    if (id !== ui.tab) track("tab_viewed", { tab: id });
     ui.tab = id;
     if (location.hash !== `#${id}`) history.replaceState(null, "", `#${id}`);
     render();
@@ -265,7 +270,7 @@
   function bindOnboarding() {
     app().querySelectorAll("[data-goal]").forEach((b) => b.addEventListener("click", () => { S.goal = +b.dataset.goal; render(); }));
     const ob = $("#ob-board"); if (ob) ob.addEventListener("change", (e) => { S.board = e.target.checked; });
-    $("#ob-go").addEventListener("click", () => { S.onboarded = true; save(); render(); startNode(E.nextNode(IX, S)); });
+    $("#ob-go").addEventListener("click", () => { S.onboarded = true; track("onboarding_completed", { goal_xp: S.goal }); save(); render(); startNode(E.nextNode(IX, S)); });
   }
 
   // ---------- learn tab ----------
@@ -444,7 +449,7 @@
     const root = app();
     root.querySelectorAll("[data-tab]").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.tab)));
     root.querySelectorAll("[data-start]").forEach((b) => b.addEventListener("click", () => startNode(E.pathNodes(IX).find((n) => n.id === b.dataset.start))));
-    root.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", () => copyText(slackText(IX.items.get(b.dataset.copy)))));
+    root.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", () => { track("copied_for_slack", { item_id: b.dataset.copy, tab: ui.tab }); copyText(slackText(IX.items.get(b.dataset.copy))); }));
     root.querySelectorAll("[data-huddle]").forEach((b) => b.addEventListener("click", (e) => { e.stopPropagation(); openHuddle(b.dataset.huddle); }));
     root.querySelectorAll("[data-goal]").forEach((b) => b.addEventListener("click", () => { S.goal = +b.dataset.goal; save(); render(); }));
     root.querySelectorAll("[data-filter]").forEach((b) => b.addEventListener("click", () => { ui.teachFilter = b.dataset.filter; render(); }));
@@ -482,10 +487,15 @@
     else steps = E.buildPractice(IX, S, sd);
     if (!steps.length) { toast("Nothing to practice yet"); return; }
     run = { mode, node, steps, i: 0, misses: 0, combo: 0, maxCombo: 0, right: 0, scored: 0, requeued: new Set(), answered: false, start: Date.now() };
+    track("lesson_started", runProps());
     ui.overlay = "lesson";
     drawStep();
   }
+  function runProps() {
+    return run ? { mode: run.mode, lesson_id: run.node ? run.node.id : null, unit_id: run.node ? run.node.unitId : null } : {};
+  }
   function closeRun() {
+    if (run && !run.finished) track(run.mode === "rodeo" ? "rodeo_quit" : "lesson_quit", { ...runProps(), step: run.i, steps: run.steps.length, answered: run.scored, rides: run.mode === "rodeo" ? run.right : undefined });
     run = null; ui.overlay = null;
     const o = $(".lesson"); if (o) o.remove();
     clearTimeout(rodeoTimer);
@@ -673,6 +683,7 @@
     if (ok) { run.right += 1; S.correct += 1; run.combo += 1; run.maxCombo = Math.max(run.maxCombo, run.combo); sfx.right(); buzz(15); }
     else { run.misses += 1; run.combo = 0; sfx.wrong(); buzz([30, 40, 30]); }
     if (q.itemId) E.grade(S, q.itemId, ok, t);
+    track("question_answered", { ...runProps(), item_id: q.itemId, type: q.type, label: q.label, correct: ok, timed_out: why === "Time's up!" });
     if (run.mode === "rodeo") { showFeedback(ok, ok ? pick(RIGHT) : why || "Bucked off!", q); return; }
     if (!ok && !run.requeued.has(run.i)) {
       // missed questions come back at the end of the lesson
@@ -710,6 +721,9 @@
     if (run.node && (run.mode === "lesson" || run.mode === "roundup")) S.done[run.node.id] = { perfect, at: t };
     const fresh = E.awardBadges(S, t);
     save();
+    run.finished = true;
+    track("lesson_completed", { ...runProps(), accuracy: run.scored ? run.right / run.scored : 1, perfect, xp: gained, seconds: Math.round((Date.now() - run.start) / 1000), max_combo: run.maxCombo, streak: S.streak, used_freeze: st.usedFreeze > 0, total_xp: S.xp, learned: Object.keys(S.items).length });
+    for (const b of fresh) track("badge_earned", { badge: b.id });
     const acc = run.scored ? Math.round((run.right / run.scored) * 100) : 100;
     const secs = Math.round((Date.now() - run.start) / 1000);
     sfx.done(); confetti();
@@ -735,6 +749,7 @@
   const RODEO_MS = 8000;
   function startRodeo() {
     run = { mode: "rodeo", node: null, steps: [], i: 0, misses: 0, combo: 0, maxCombo: 0, right: 0, scored: 0, requeued: new Set(), answered: false, start: Date.now(), r: E.rng(seed()) };
+    track("rodeo_started", { best: S.rodeoBest });
     ui.overlay = "lesson";
     shell(`<div class="results">${mascot("cheer")}<h1>Rodeo</h1><p class="story" style="max-width:34ch">A real bull ride lasts 8 seconds. Here, every question does. Answer before the clock runs out to stay on. One miss and you're bucked off.</p><p class="muted" style="font-weight:800">Your best: ${S.rodeoBest} rides</p></div>`, footerBtn("Open the gate", "gold"));
     $("#next").addEventListener("click", nextRodeo);
@@ -762,6 +777,9 @@
     if (gained > 0) { E.addXp(S, t, gained); E.touchStreak(S, t); }
     const fresh = E.awardBadges(S, t);
     save();
+    run.finished = true;
+    track("rodeo_finished", { rides: score, best: S.rodeoBest, new_best: best && score > 0, xp: gained });
+    for (const b of fresh) track("badge_earned", { badge: b.id });
     if (best && score > 0) confetti();
     sfx.done();
     shell(`<div class="results">${mascot(score >= 5 ? "cheer" : "sad")}
@@ -779,6 +797,7 @@
     const u = IX.course.units.find((x) => x.id === unitId);
     const its = u.lessons.flatMap((l) => l.items.map((x) => IX.items.get(x.id)));
     huddle = { u, its, i: 0 };
+    track("huddle_opened", { unit_id: unitId, tab: ui.tab });
     ui.overlay = "huddle";
     drawHuddle();
   }
