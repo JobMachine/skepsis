@@ -11,18 +11,18 @@ const easeOut = Easing.bezier(0.16, 1, 0.3, 1);
 
 const FLAME = "M12 2c1 3.5-1.6 5.3-2.9 7.3C7.6 11.5 7 13 7 14.6 7 18.1 9.3 21 12 21s5-2.6 5-6.2c0-2.1-.9-3.7-2-5 .1 1.6-.5 2.8-1.6 3.3.5-3.6-.6-7.6-1.4-11.1z";
 
-const Coin: React.FC<{ size: number }> = ({ size }) => (
+export const Coin: React.FC<{ size: number }> = ({ size }) => (
   <svg width={size} height={size} viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill={C.gold} /><path d="M12 6.5 7.6 16.5h8.8z" fill="none" stroke="#fff" strokeWidth={2} strokeLinejoin="round" /></svg>
 );
-const Flame: React.FC<{ size: number }> = ({ size }) => (
+export const Flame: React.FC<{ size: number }> = ({ size }) => (
   <svg width={size} height={size} viewBox="0 0 24 24"><path d={FLAME} fill={C.flame} /></svg>
 );
-const Check: React.FC<{ size: number; color: string }> = ({ size, color }) => (
+export const Check: React.FC<{ size: number; color: string }> = ({ size, color }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={3.2} strokeLinecap="round" strokeLinejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
 );
 
 /** Greek letters drifting behind everything. */
-const Backdrop: React.FC = () => {
+export const Backdrop: React.FC = () => {
   const f = useCurrentFrame();
   const letters = ["α", "β", "γ", "Ω", "σ", "λ", "φ", "δ", "ψ"];
   return (
@@ -38,7 +38,7 @@ const Backdrop: React.FC = () => {
   );
 };
 
-const Hook: React.FC = () => {
+export const Hook: React.FC = () => {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
   const words: [string, string][] = [["Y'all", C.ink], ["already", C.ink], ["speak", C.ink], ["Greek.", C.brand]];
@@ -171,7 +171,7 @@ const BuildPane: React.FC<{ f: number }> = ({ f }) => {
   );
 };
 
-const Phone: React.FC = () => {
+export const Phone: React.FC = () => {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
   const enter = spring({ frame: f, fps, config: { damping: 15, stiffness: 120 } });
@@ -196,7 +196,7 @@ const Phone: React.FC = () => {
 };
 
 // ---------- montage ----------
-const Confetti: React.FC<{ f: number }> = ({ f }) => {
+export const Confetti: React.FC<{ f: number }> = ({ f }) => {
   const cols = [C.gold, C.brand, C.olive, C.flame, C.clay];
   return (
     <>
@@ -213,7 +213,7 @@ const Confetti: React.FC<{ f: number }> = ({ f }) => {
   );
 };
 
-const Montage: React.FC = () => {
+export const Montage: React.FC = () => {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
   const pop = (d: number) => spring({ frame: f - d, fps, config: { damping: 11, stiffness: 170 } });
@@ -245,7 +245,7 @@ const Montage: React.FC = () => {
 };
 
 // ---------- end card ----------
-const EndCard: React.FC = () => {
+export const EndCard: React.FC = () => {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
   const wipe = interpolate(f, [0, 9], [0, 820], { ...clamp, easing: easeOut });
