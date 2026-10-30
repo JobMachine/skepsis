@@ -10,7 +10,7 @@
 
 ## What's inside
 
-- **11 units, 33 lessons, 93 Greek roots and ideas** (plus 16 "Is it Greek?" decoys).
+- **11 units, 33 lessons, 93 Greek roots and ideas** plus a 34-word "Is it Greek?" game.
   - Everyday roots: tele, phon, graph, photo, auto.
   - Size and number: mega, micro, poly, mono.
   - Space and oil: astronaut, petroleum, helium.
@@ -21,7 +21,7 @@
   - Persuasion: ethos, pathos, logos, kairos, hubris.
   - Stoic ideas: dichotomy of control, aretē, eudaimonia.
   - Startup Greek: strategy, crisis, protocol.
-  - **Is it Greek? Texas Edition:** rodeo, maverick, barbecue.
+  - **Is it Greek? Texas Edition:** rodeo, Alamo and mustang are Spanish; squirrel, butter and oyster are secretly Greek.
 - **Six kinds of questions:** guess first, multiple choice, decode a word you've never seen, build a word from its pieces, match pairs, and Greek-or-not.
 - **Game parts:** XP, a daily goal, streaks (weekends never break them, plus freezes), badges, and **Rodeo**, a speed round with 8 seconds per question where one miss bucks you off.
 - **Teach mode:**
