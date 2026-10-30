@@ -10,11 +10,12 @@
 
 ## What's inside
 
-- **11 units, 33 lessons, 106 words and ideas.**
+- **11 units, 33 lessons, 93 Greek roots and ideas** (plus 16 "Is it Greek?" decoys).
   - Everyday roots: tele, phon, graph, photo, auto.
   - Size and number: mega, micro, poly, mono.
   - Space and oil: astronaut, petroleum, helium.
   - Medicine: cardio, derm, -itis.
+  - Manias and thieves: megalomania, kleptomania, pyrotechnics.
   - Power and people: democracy, -cracy, polis, "Metroplex".
   - Myths: Nike, Achilles' heel, Trojan horse, mentor.
   - Persuasion: ethos, pathos, logos, kairos, hubris.

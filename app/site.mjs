@@ -129,11 +129,12 @@ function wordPage(p, all) {
 }
 
 function indexPage(all) {
-  const body = `<h1>Greek in everyday English</h1><p class="say">${all.length} Greek roots, myths and ideas you already use, each with real examples, the original Greek and a one-line way to explain it.</p>
+  const greek = all.filter((p) => p.it.kind !== "origin").length;
+  const body = `<h1>Greek in everyday English</h1><p class="say">${greek} Greek roots, myths and ideas you already use, plus a round of "Is it Greek?", each with real examples, the original Greek and a one-line way to explain it.</p>
     ${COURSE.units.map((u, i) => `<h2>${i + 1}. ${esc(u.title)}</h2><p style="margin:0 0 8px;color:var(--muted);font-weight:700">${esc(u.blurb)}</p><div class="grid">${all.filter((p) => p.unit.id === u.id).map((p) => `<a href="/words/${p.slug}"><b>${esc(p.it.kind === "origin" ? p.it.w : p.h1)}</b><span>${esc(p.it.kind === "origin" ? (p.it.greek ? "Greek" : "Not Greek") : p.it.m)}</span></a>`).join("")}</div>`).join("")}
     <a class="cta" href="/">Start learning, free</a>`;
   const jsonld = [{ "@context": "https://schema.org", "@type": "DefinedTermSet", name: "Skepsis: Greek roots and ideas in English", url: `${SITE}/words`, hasDefinedTerm: all.filter((p) => p.it.kind !== "origin").map((p) => ({ "@type": "DefinedTerm", name: p.h1, url: `${SITE}/words/${p.slug}` })) }];
-  return page({ title: `Greek roots and ideas in English: the full list | ${NAME}`, desc: `All ${all.length} Greek roots, myths and ideas taught in Skepsis, from tele and photo to hubris and kudos, with meanings, examples and the original Greek.`, path: "/words", body, jsonld });
+  return page({ title: `Greek roots and ideas in English: the full list | ${NAME}`, desc: `All ${greek} Greek roots, myths and ideas taught in Skepsis, from tele and photo to hubris and kudos, with meanings, examples and the original Greek.`, path: "/words", body, jsonld });
 }
 
 function aboutPage(all) {
@@ -167,7 +168,7 @@ function appPage(appMarkup, all) {
   ];
   // The app markup carries its own <title>; drop it so the SEO title wins.
   const app = appMarkup.replace(/<title>[^<]*<\/title>\s*/, "").replace(/<meta name="description"[^>]*>\s*/, "").replace(/<link rel="(preconnect|stylesheet)"[^>]*>\s*/g, "");
-  const fallback = `<noscript><div style="max-width:640px;margin:24px auto;padding:0 16px;font-family:system-ui"><h1>${NAME}: ${TAGLINE}</h1><p>${esc(DESC)}</p><p><a href="/words">Browse all ${all.length} Greek roots and ideas</a> · <a href="/about">About</a></p></div></noscript>`;
+  const fallback = `<noscript><div style="max-width:640px;margin:24px auto;padding:0 16px;font-family:system-ui"><h1>${NAME}: ${TAGLINE}</h1><p>${esc(DESC)}</p><p><a href="/words">Browse all ${all.filter((p) => p.it.kind !== "origin").length} Greek roots and ideas</a> · <a href="/about">About</a></p></div></noscript>`;
   const footer = `<footer class="site-foot" aria-label="More"><a href="/words">All ${all.length} words</a><a href="/about">About</a><a href="${REPO}">Open source</a><a href="${REPO}/tree/main/mcp">Use with your AI agent</a></footer>`;
   return `<!doctype html><html lang="en"><head>${head({ title: `${NAME}: ${TAGLINE}`, desc: DESC, path: "/", jsonld })}
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}

@@ -139,7 +139,7 @@ const COURSE = {
           title: "Big and small",
           items: [
             {
-              id: "mega", kind: "root", root: "mega", gr: "μέγας", tr: "megas", m: "big, great",
+              id: "mega", kind: "root", root: "mega / megalo", gr: "μέγας, μεγάλου", tr: "megas, megalou", m: "big, great",
               hook: "Houston's Lakewood Church is a megachurch: a big one. Buc-ee's is a mega gas station.",
               say: "Mega means big. A megaphone makes a big voice. In tech, mega means a million.",
               ex: [
@@ -661,6 +661,42 @@ const COURSE = {
                 ["chronological", "in time order", ["chrono", "logical"]],
                 ["synchronize", "to line up in time", ["syn", "chron", "ize"]],
                 ["chronometer", "a very exact clock", ["chrono", "meter"]],
+              ],
+            },
+          ],
+        },
+        {
+          id: "u6l3",
+          title: "Manias and thieves",
+          items: [
+            {
+              id: "mania", kind: "root", root: "mania", gr: "μανία", tr: "mania", m: "madness, frenzy",
+              hook: "Friday night football in Texas isn't a hobby, it's a mania. Megalomania is when someone thinks they're bigger than the whole state.",
+              say: "Mania means madness. Megalomania: madness about your own greatness. Kleptomania: an urge to steal.",
+              ex: [
+                ["megalomania", "an obsession with your own greatness and power", ["megalo", "mania"]],
+                ["kleptomania", "an uncontrollable urge to steal", ["klepto", "mania"]],
+                ["pyromania", "an uncontrollable urge to set fires", ["pyro", "mania"]],
+              ],
+            },
+            {
+              id: "pyr", kind: "root", root: "pyr / pyro", gr: "πῦρ", tr: "pyr", m: "fire",
+              hook: "Every Texas highway sprouts fireworks stands before the Fourth of July. That's pyrotechnics: the craft of fire.",
+              say: "Pyr means fire. Pyrotechnics: fireworks. Antipyretic: a fever reducer, literally 'against fire'.",
+              ex: [
+                ["pyrotechnics", "fireworks; the craft of fire", ["pyro", "technics"]],
+                ["pyromania", "an uncontrollable urge to set fires", ["pyro", "mania"]],
+                ["antipyretic", "a medicine that brings a fever down", ["anti", "pyr", "etic"]],
+              ],
+            },
+            {
+              id: "klept", kind: "root", root: "klept / klepto", gr: "κλέπτης", tr: "kleptēs", m: "thief, to steal",
+              hook: "In the Old West, a cattle rustler was a kleptēs: a thief. Texas Rangers didn't need Greek to catch one.",
+              say: "Klept means thief. Kleptomania: an urge to steal. Kleptocracy: government run by thieves.",
+              ex: [
+                ["kleptomania", "an uncontrollable urge to steal", ["klepto", "mania"]],
+                ["kleptocracy", "a government run by thieves", ["klepto", "cracy"]],
+                ["kleptoparasite", "an animal that steals food other animals caught", ["klepto", "parasite"]],
               ],
             },
           ],
