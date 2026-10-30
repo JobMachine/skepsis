@@ -1,0 +1,22 @@
+{
+  "name": "skepsis-video",
+  "private": true,
+  "version": "1.0.0",
+  "description": "5-second launch video for Skepsis (Remotion)",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts SkepsisX out/skepsis-x.mp4 --codec=h264 --pixel-format=yuv420p --crf=20",
+    "poster": "remotion still src/index.ts SkepsisX out/poster.png --frame=138"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.534",
+    "@remotion/google-fonts": "4.0.534",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.534"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.12",
+    "typescript": "5.6.3"
+  }
+}

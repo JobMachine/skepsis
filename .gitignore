@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+# build output (regenerate with `npm run build`)
+app/dist/
+app/vercel/
+.vercel/
+video/out/
+video/node_modules/

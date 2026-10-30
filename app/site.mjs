@@ -1,0 +1,188 @@
+// Builds the public website into ./vercel: the app at "/" plus one static, crawlable page per
+// root/idea (/words/<slug>), a word index, an about page, sitemap, robots, 404 and a web manifest.
+// Called from build.mjs with the inlined app markup.
+import { writeFileSync, mkdirSync } from "node:fs";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+const { COURSE } = require("./src/content.js");
+
+export const SITE = "https://skepsis-greek.vercel.app";
+export const REPO = "https://github.com/ionpetro/skepsis";
+const NAME = "Skepsis";
+const TAGLINE = "Learn Greek roots in 3 minutes a day";
+const DESC = "A free, open-source game that teaches the Greek roots, myths and ideas hiding in everyday English (tele, photo, hubris, kudos) in 3-minute lessons, with Texas examples.";
+const AUTHOR = "Ion Petropoulos";
+
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const slug = (s) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/'/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+/** Every item with its unit, lesson, a URL slug and plain-text title/description for SEO. */
+export function pages() {
+  const out = [];
+  for (const u of COURSE.units) for (const l of u.lessons) for (const it of l.items) {
+    let s, title, h1, desc;
+    if (it.kind === "root") {
+      s = it.id;
+      title = `${it.root}: Greek root meaning "${it.m}"`;
+      h1 = it.root;
+      desc = `${it.root} (${it.gr}) means "${it.m}". ${it.say} Examples: ${it.ex.map((e) => e[0]).join(", ")}.`;
+    } else if (it.kind === "idea") {
+      s = slug(it.term);
+      title = `${it.term}: meaning and Greek origin`;
+      h1 = it.term;
+      desc = `${it.term} (${it.gr}, "${it.lit}"): ${it.m}. ${it.say}`;
+    } else {
+      s = `is-${slug(it.w)}-greek`;
+      title = `Is "${it.w}" a Greek word?`;
+      h1 = `Is "${it.w}" Greek?`;
+      desc = `${it.greek ? "Yes" : "No"}. ${it.from}`;
+    }
+    out.push({ it, unit: u, lesson: l, slug: s, title, h1, desc: desc.slice(0, 300) });
+  }
+  return out;
+}
+
+const FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Nunito:wght@400;600;700;800;900&family=Rye&display=swap">';
+const ICONS = '<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#3446c9">';
+
+function head({ title, desc, path, type = "website", jsonld = [] }) {
+  const url = SITE + path;
+  return `<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>${esc(title)}</title>
+<meta name="description" content="${esc(desc)}">
+<link rel="canonical" href="${url}">
+<meta property="og:type" content="${type}"><meta property="og:site_name" content="${NAME}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${url}"><meta property="og:image" content="${SITE}/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Skepsis: Y'all already speak Greek">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(desc)}"><meta name="twitter:image" content="${SITE}/og.png">
+${ICONS}${FONTS}
+${jsonld.map((j) => `<script type="application/ld+json">${JSON.stringify(j).replace(/</g, "\\u003c")}</script>`).join("\n")}`;
+}
+
+// Shared look for the static pages: same tokens as the app.
+const PAGE_CSS = `:root{--bg:#f6f6f2;--surface:#fff;--ink:#161a3a;--muted:#5d6286;--line:#e0e2ec;--brand:#3446c9;--brand-deep:#222e8e;--brand-soft:#e3e7fb;--gold:#d99a06;--gold-soft:#fbefd0;--olive:#4b8a2a;--olive-soft:#e3f1d8;--on:#fff;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1124;--surface:#171b36;--ink:#eceefa;--muted:#a2a7c9;--line:#2a3058;--brand:#8a99f7;--brand-deep:#3c4bc4;--brand-soft:#262d63;--gold:#f2bb3a;--gold-soft:#3a3016;--olive:#84c25c;--olive-soft:#1f3317;--on:#0e1124;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 Nunito,ui-rounded,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:720px;margin:0 auto;padding:24px max(16px,env(safe-area-inset-right,0px)) 64px max(16px,env(safe-area-inset-left,0px))}
+a{color:var(--brand);font-weight:800}nav.top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid var(--line)}
+nav.top .brand{font-family:Rye,Georgia,serif;font-weight:400;font-size:22px;text-decoration:none;margin-right:auto}nav.top a{text-decoration:none;font-size:15px}
+.crumbs{font-size:14px;color:var(--muted);margin:18px 0 6px}.crumbs a{font-weight:700}
+h1{font-size:clamp(34px,7vw,52px);line-height:1.05;margin:6px 0 4px;font-weight:900;text-wrap:balance}h2{font-size:22px;margin:32px 0 8px;font-weight:900}
+.greek{font-family:"GFS Didot","Palatino Linotype",Palatino,Georgia,serif;font-weight:400}
+.gr{font-size:28px;color:var(--brand)}.mean{display:inline-block;font-size:21px;font-weight:900;background:var(--gold-soft);padding:2px 10px;border-radius:8px;margin:8px 0}
+.say{font-size:19px;font-weight:700}.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:12px 0}
+.tx{background:var(--brand-soft);border-radius:14px;padding:14px 16px;font-weight:700}.work{background:var(--olive-soft);border-radius:14px;padding:14px 16px;font-weight:700}
+ul.fam{list-style:none;padding:0;margin:0;display:grid;gap:8px}ul.fam li{border:2px dashed var(--line);border-radius:12px;padding:10px 14px}ul.fam b{font-size:18px}
+.cta{display:inline-flex;align-items:center;gap:8px;margin-top:20px;background:var(--brand);color:var(--on);text-decoration:none;font-weight:900;letter-spacing:.04em;text-transform:uppercase;padding:14px 22px;border-radius:14px;box-shadow:0 4px 0 var(--brand-deep)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}.grid a{display:block;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-decoration:none;color:var(--ink)}
+.grid a b{display:block;color:var(--brand)}.grid a span{font-size:14px;color:var(--muted);font-weight:700}
+footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}footer a{font-weight:700}`;
+
+function nav() {
+  return `<nav class="top" aria-label="Site"><a class="brand" href="/">Skepsis</a><a href="/words">All words</a><a href="/about">About</a><a href="${REPO}">GitHub</a></nav>`;
+}
+function foot() {
+  return `<footer><p>${NAME} is free and open source (MIT). Made by ${AUTHOR}. Etymologies checked against Etymonline and Merriam-Webster. <a href="${REPO}">Source on GitHub</a> · <a href="${REPO}/tree/main/mcp">Learn from your AI agent (MCP)</a></p></footer>`;
+}
+function page({ title, desc, path, body, jsonld, type }) {
+  return `<!doctype html><html lang="en"><head>${head({ title, desc, path, jsonld, type })}<style>${PAGE_CSS}</style></head><body><div class="wrap">${nav()}${body}${foot()}</div></body></html>`;
+}
+
+function wordPage(p, all) {
+  const { it, unit } = p;
+  const siblings = all.filter((x) => x.unit.id === unit.id && x !== p);
+  let body = `<div class="crumbs"><a href="/words">All words</a> › ${esc(unit.title)}</div>`;
+  if (it.kind === "root") {
+    body += `<h1>${esc(it.root)}</h1><div class="greek gr" lang="grc">${esc(it.gr)} <span style="font-size:18px;color:var(--muted)">(${esc(it.tr)})</span></div>
+      <div class="mean">means “${esc(it.m)}”</div><p class="say">${esc(it.say)}</p>
+      <h2>Words built on ${esc(it.root)}</h2><ul class="fam">${it.ex.map(([w, d, parts]) => `<li><b>${esc(w)}</b>: ${esc(d)} <span style="color:var(--muted)">(${esc(parts.join(" + "))})</span></li>`).join("")}</ul>
+      <h2>The Texas version</h2><p class="tx">${esc(it.hook)}</p>`;
+  } else if (it.kind === "idea") {
+    body += `<h1>${esc(it.term)}</h1><div class="greek gr" lang="grc">${esc(it.gr)} <span style="font-size:18px;color:var(--muted)">(${esc(it.tr)}, “${esc(it.lit)}”)</span></div>
+      <div class="mean">${esc(it.m)}</div><p class="say">${esc(it.say)}</p>
+      <h2>The story</h2><p>${esc(it.story)}</p>
+      <h2>The Texas version</h2><p class="tx">${esc(it.tex)}</p>
+      <h2>Use it at work</h2><p class="work">${esc(it.work)}</p>`;
+  } else {
+    body += `<h1>${esc(p.h1)}</h1><div class="mean">${it.greek ? "Yes, it's Greek" : "No, it's not Greek"}</div><p class="say">${esc(it.from)}</p>`;
+  }
+  body += `<a class="cta" href="/#learn">Practice it in Skepsis</a>
+    <h2>More from “${esc(unit.title)}”</h2><div class="grid">${siblings.map((x) => `<a href="/words/${x.slug}"><b>${esc(x.it.kind === "origin" ? x.it.w : x.h1)}</b><span>${esc(x.it.kind === "origin" ? (x.it.greek ? "Greek" : "Not Greek") : x.it.m)}</span></a>`).join("")}</div>`;
+  const jsonld = [
+    it.kind === "origin"
+      ? { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: [{ "@type": "Question", name: p.title, acceptedAnswer: { "@type": "Answer", text: `${it.greek ? "Yes" : "No"}. ${it.from}` } }] }
+      : { "@context": "https://schema.org", "@type": "DefinedTerm", name: p.h1, alternateName: it.gr, description: it.kind === "root" ? `${it.m}. ${it.say}` : `${it.m}. ${it.story}`, inDefinedTermSet: { "@type": "DefinedTermSet", name: "Skepsis: Greek roots and ideas in English", url: `${SITE}/words` }, url: `${SITE}/words/${p.slug}` },
+    { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "All words", item: `${SITE}/words` }, { "@type": "ListItem", position: 2, name: p.h1, item: `${SITE}/words/${p.slug}` }] },
+  ];
+  return page({ title: `${p.title} | ${NAME}`, desc: p.desc, path: `/words/${p.slug}`, body, jsonld, type: "article" });
+}
+
+function indexPage(all) {
+  const body = `<h1>Greek in everyday English</h1><p class="say">${all.length} Greek roots, myths and ideas you already use, each with real examples, the original Greek and a one-line way to explain it.</p>
+    ${COURSE.units.map((u, i) => `<h2>${i + 1}. ${esc(u.title)}</h2><p style="margin:0 0 8px;color:var(--muted);font-weight:700">${esc(u.blurb)}</p><div class="grid">${all.filter((p) => p.unit.id === u.id).map((p) => `<a href="/words/${p.slug}"><b>${esc(p.it.kind === "origin" ? p.it.w : p.h1)}</b><span>${esc(p.it.kind === "origin" ? (p.it.greek ? "Greek" : "Not Greek") : p.it.m)}</span></a>`).join("")}</div>`).join("")}
+    <a class="cta" href="/">Start learning, free</a>`;
+  const jsonld = [{ "@context": "https://schema.org", "@type": "DefinedTermSet", name: "Skepsis: Greek roots and ideas in English", url: `${SITE}/words`, hasDefinedTerm: all.filter((p) => p.it.kind !== "origin").map((p) => ({ "@type": "DefinedTerm", name: p.h1, url: `${SITE}/words/${p.slug}` })) }];
+  return page({ title: `Greek roots and ideas in English: the full list | ${NAME}`, desc: `All ${all.length} Greek roots, myths and ideas taught in Skepsis, from tele and photo to hubris and kudos, with meanings, examples and the original Greek.`, path: "/words", body, jsonld });
+}
+
+function aboutPage(all) {
+  const roots = all.filter((p) => p.it.kind === "root").length, ideas = all.filter((p) => p.it.kind === "idea").length;
+  const body = `<h1>About Skepsis</h1><div class="greek gr" lang="grc">σκέψις <span style="font-size:18px;color:var(--muted)">(skepsis, “looking closely”)</span></div>
+    <p class="say">Skepsis teaches the Greek hiding in everyday English, in lessons short enough for a coffee break. It started as a way to teach a busy team in Texas, so every word comes with a Texas example.</p>
+    <h2>What's inside</h2><p>${COURSE.units.length} units, ${roots} word roots and ${ideas} myths and ideas: tele, photo and graph; astronaut and petroleum; ethos, pathos and logos; hubris and nemesis; the Stoics; and a round of “Is it Greek?” (rodeo, maverick, barbecue).</p>
+    <h2>How it teaches</h2><ul>
+      <li><b>Guess first.</b> Each lesson starts with a word you haven't learned. Guessing before you're told helps it stick.</li>
+      <li><b>Word families.</b> Learn a root with its family, then decode words you have never seen.</li>
+      <li><b>Spaced review.</b> Words come back after 1, 3, 7, 14 and 30 days.</li>
+      <li><b>No punishment.</b> No hearts, no lives. Weekends never break a streak.</li></ul>
+    <p>The research behind these choices, with sources, is in <a href="${REPO}/blob/main/RESEARCH.md">RESEARCH.md</a>.</p>
+    <h2>Learn from your AI agent</h2><p>Skepsis ships an MCP server, so Claude, Cursor or any MCP-capable agent can tutor you with the same lessons and spaced review:</p>
+    <pre class="card" style="overflow-x:auto;font-size:14px">claude mcp add skepsis -- npx -y github:ionpetro/skepsis</pre>
+    <h2>Open source</h2><p>Code and content are MIT-licensed on <a href="${REPO}">GitHub</a>. Corrections and new words are welcome.</p>
+    <a class="cta" href="/">Start learning, free</a>`;
+  return page({ title: `About ${NAME}: Greek roots in 3 minutes a day`, desc: DESC, path: "/about", body, jsonld: [{ "@context": "https://schema.org", "@type": "AboutPage", name: `About ${NAME}`, url: `${SITE}/about` }] });
+}
+
+function notFound() {
+  return page({ title: `Not found | ${NAME}`, desc: DESC, path: "/404", body: `<h1>Lost like Odysseus</h1><p class="say">This page doesn't exist. It took him ten years to get home; it'll take you one click.</p><a class="cta" href="/">Back home</a> <a class="cta" href="/words" style="background:var(--olive);box-shadow:0 4px 0 #356a1b">All words</a>`, jsonld: [] });
+}
+
+/** The app at "/": full document, SEO head, static fallback content for crawlers and no-JS. */
+function appPage(appMarkup, all) {
+  const jsonld = [
+    { "@context": "https://schema.org", "@type": "WebApplication", name: NAME, url: `${SITE}/`, description: DESC, applicationCategory: "EducationalApplication", operatingSystem: "Any (web browser)", inLanguage: "en", isAccessibleForFree: true, offers: { "@type": "Offer", price: "0", priceCurrency: "USD" }, author: { "@type": "Person", name: AUTHOR }, sameAs: [REPO] },
+    { "@context": "https://schema.org", "@type": "Course", name: `${NAME}: Greek roots, myths and ideas in English`, description: DESC, provider: { "@type": "Person", name: AUTHOR }, isAccessibleForFree: true, inLanguage: "en", hasCourseInstance: { "@type": "CourseInstance", courseMode: "online", courseWorkload: "PT3M" }, offers: { "@type": "Offer", price: "0", priceCurrency: "USD", category: "Free" } },
+  ];
+  // The app markup carries its own <title>; drop it so the SEO title wins.
+  const app = appMarkup.replace(/<title>[^<]*<\/title>\s*/, "").replace(/<meta name="description"[^>]*>\s*/, "").replace(/<link rel="(preconnect|stylesheet)"[^>]*>\s*/g, "");
+  const fallback = `<noscript><div style="max-width:640px;margin:24px auto;padding:0 16px;font-family:system-ui"><h1>${NAME}: ${TAGLINE}</h1><p>${esc(DESC)}</p><p><a href="/words">Browse all ${all.length} Greek roots and ideas</a> · <a href="/about">About</a></p></div></noscript>`;
+  const footer = `<footer class="site-foot" aria-label="More"><a href="/words">All ${all.length} words</a><a href="/about">About</a><a href="${REPO}">Open source</a><a href="${REPO}/tree/main/mcp">Use with your AI agent</a></footer>`;
+  return `<!doctype html><html lang="en"><head>${head({ title: `${NAME}: ${TAGLINE}`, desc: DESC, path: "/", jsonld })}
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}
+.site-foot{max-width:560px;margin:-8px auto 0;display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:center;font:700 13px/1.4 Nunito,system-ui,sans-serif;padding:0 max(16px,env(safe-area-inset-right,0px)) calc(96px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.site-foot a{color:var(--muted,#5d6286);text-decoration:none}.site-foot a:hover{color:var(--brand,#3446c9)}body:has(.lesson,.huddle,.onboard) .site-foot{display:none}</style>
+</head><body>${fallback}${app}${footer}</body></html>`;
+}
+
+export function buildSite(appMarkup, outDir) {
+  const all = pages();
+  const w = (rel, s) => { const f = new URL(rel, outDir); mkdirSync(new URL(".", f), { recursive: true }); writeFileSync(f, s); };
+  w("index.html", appPage(appMarkup, all));
+  w("words.html", indexPage(all));
+  for (const p of all) w(`words/${p.slug}.html`, wordPage(p, all));
+  w("about.html", aboutPage(all));
+  w("404.html", notFound());
+  const today = new Date().toISOString().slice(0, 10);
+  const urls = ["/", "/words", "/about", ...all.map((p) => `/words/${p.slug}`)];
+  w("sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${SITE}${u === "/" ? "/" : u}</loc><lastmod>${today}</lastmod></url>`).join("\n")}\n</urlset>\n`);
+  w("robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
+  w("favicon.svg", `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#3446c9"/><text x="32" y="47" text-anchor="middle" font-family="Georgia,serif" font-size="42" fill="#fff">σ</text></svg>`);
+  w("manifest.webmanifest", JSON.stringify({ name: `${NAME}: ${TAGLINE}`, short_name: NAME, description: DESC, start_url: "/", display: "standalone", background_color: "#f6f6f2", theme_color: "#3446c9", icons: [{ src: "/icon-192.png", sizes: "192x192", type: "image/png" }, { src: "/icon-512.png", sizes: "512x512", type: "image/png" }, { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" }] }, null, 2));
+  w("vercel.json", JSON.stringify({
+    cleanUrls: true, trailingSlash: false,
+    headers: [
+      { source: "/(.*)", headers: [{ key: "X-Content-Type-Options", value: "nosniff" }, { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" }, { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" }] },
+      { source: "/(.*)\\.(png|svg|webmanifest)", headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }] },
+    ],
+  }, null, 2));
+  return all.length;
+}

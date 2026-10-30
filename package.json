@@ -1,0 +1,42 @@
+{
+  "name": "skepsis",
+  "version": "1.0.0",
+  "description": "Learn Greek roots, myths and big ideas in 3 minutes a day. Web app + MCP server for your AI agent.",
+  "license": "MIT",
+  "bin": {
+    "skepsis-mcp": "mcp/server.js"
+  },
+  "files": [
+    "mcp/server.js",
+    "mcp/lib.js",
+    "mcp/package.json",
+    "app/src/content.js",
+    "app/src/engine.js"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test app/test/engine.test.js mcp/test/server.test.mjs",
+    "build": "node app/build.mjs",
+    "mcp": "node mcp/server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "zod": "4.6.6"
+  },
+  "keywords": [
+    "greek",
+    "etymology",
+    "mcp",
+    "model-context-protocol",
+    "learning",
+    "vocabulary",
+    "spaced-repetition"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ionpetro/skepsis.git"
+  },
+  "homepage": "https://skepsis-greek.vercel.app"
+}
