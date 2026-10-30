@@ -78,4 +78,4 @@ Corrections to etymologies are very welcome. Please cite Etymonline, Merriam-Web
 
 ## License
 
-MIT. Made by Ion Petropoulos.
+MIT. Made by [Ion Petropoulos](https://ionpetro.com).

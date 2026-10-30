@@ -13,6 +13,8 @@ const NAME = "Skepsis";
 const TAGLINE = "Learn Greek roots in 3 minutes a day";
 const DESC = "A free, open-source game that teaches the Greek roots, myths and ideas hiding in everyday English (tele, photo, hubris, kudos) in 3-minute lessons, with Texas examples.";
 const AUTHOR = "Ion Petropoulos";
+const AUTHOR_URL = "https://ionpetro.com";
+const PERSON = { "@type": "Person", name: AUTHOR, url: AUTHOR_URL };
 
 // PostHog (optional): set POSTHOG_KEY in app/.env. Without it no analytics code ships at all.
 const POSTHOG_KEY = process.env.POSTHOG_KEY || "";
@@ -93,7 +95,7 @@ function nav() {
   return `<nav class="top" aria-label="Site"><a class="brand" href="/">Skepsis</a><a href="/words">All words</a><a href="/about">About</a><a href="${REPO}">GitHub</a></nav>`;
 }
 function foot() {
-  return `<footer><p>${NAME} is free and open source (MIT). Made by ${AUTHOR}. Etymologies checked against Etymonline and Merriam-Webster. <a href="${REPO}">Source on GitHub</a> · <a href="${REPO}/tree/main/mcp">Learn from your AI agent (MCP)</a></p></footer>`;
+  return `<footer><p>${NAME} is free and open source (MIT). Made by <a href="${AUTHOR_URL}">${AUTHOR}</a>. Etymologies checked against Etymonline and Merriam-Webster. <a href="${REPO}">Source on GitHub</a> · <a href="${REPO}/tree/main/mcp">Learn from your AI agent (MCP)</a></p></footer>`;
 }
 function page({ title, desc, path, body, jsonld, type }) {
   return `<!doctype html><html lang="en"><head>${head({ title, desc, path, jsonld, type })}<style>${PAGE_CSS}</style></head><body><div class="wrap">${nav()}${body}${foot()}</div></body></html>`;
@@ -140,7 +142,7 @@ function indexPage(all) {
 function aboutPage(all) {
   const roots = all.filter((p) => p.it.kind === "root").length, ideas = all.filter((p) => p.it.kind === "idea").length;
   const body = `<h1>About Skepsis</h1><div class="greek gr" lang="grc">σκέψις <span style="font-size:18px;color:var(--muted)">(skepsis, “looking closely”)</span></div>
-    <p class="say">Skepsis teaches the Greek hiding in everyday English, in lessons short enough for a coffee break. It started as a way to teach a busy team in Texas, so every word comes with a Texas example.</p>
+    <p class="say">Skepsis teaches the Greek hiding in everyday English, in lessons short enough for a coffee break. It started as a way to teach a busy team in Texas, so every word comes with a Texas example. Made by <a href="${AUTHOR_URL}">${AUTHOR}</a>.</p>
     <h2>What's inside</h2><p>${COURSE.units.length} units, ${roots} word roots and ${ideas} myths and ideas: tele, photo and graph; astronaut and petroleum; ethos, pathos and logos; hubris and nemesis; the Stoics; and a round of “Is it Greek?” (rodeo, maverick, barbecue).</p>
     <h2>How it teaches</h2><ul>
       <li><b>Guess first.</b> Each lesson starts with a word you haven't learned. Guessing before you're told helps it stick.</li>
@@ -163,13 +165,13 @@ function notFound() {
 /** The app at "/": full document, SEO head, static fallback content for crawlers and no-JS. */
 function appPage(appMarkup, all) {
   const jsonld = [
-    { "@context": "https://schema.org", "@type": "WebApplication", name: NAME, url: `${SITE}/`, description: DESC, applicationCategory: "EducationalApplication", operatingSystem: "Any (web browser)", inLanguage: "en", isAccessibleForFree: true, offers: { "@type": "Offer", price: "0", priceCurrency: "USD" }, author: { "@type": "Person", name: AUTHOR }, sameAs: [REPO] },
-    { "@context": "https://schema.org", "@type": "Course", name: `${NAME}: Greek roots, myths and ideas in English`, description: DESC, provider: { "@type": "Person", name: AUTHOR }, isAccessibleForFree: true, inLanguage: "en", hasCourseInstance: { "@type": "CourseInstance", courseMode: "online", courseWorkload: "PT3M" }, offers: { "@type": "Offer", price: "0", priceCurrency: "USD", category: "Free" } },
+    { "@context": "https://schema.org", "@type": "WebApplication", name: NAME, url: `${SITE}/`, description: DESC, applicationCategory: "EducationalApplication", operatingSystem: "Any (web browser)", inLanguage: "en", isAccessibleForFree: true, offers: { "@type": "Offer", price: "0", priceCurrency: "USD" }, author: PERSON, sameAs: [REPO] },
+    { "@context": "https://schema.org", "@type": "Course", name: `${NAME}: Greek roots, myths and ideas in English`, description: DESC, provider: PERSON, isAccessibleForFree: true, inLanguage: "en", hasCourseInstance: { "@type": "CourseInstance", courseMode: "online", courseWorkload: "PT3M" }, offers: { "@type": "Offer", price: "0", priceCurrency: "USD", category: "Free" } },
   ];
   // The app markup carries its own <title>; drop it so the SEO title wins.
   const app = appMarkup.replace(/<title>[^<]*<\/title>\s*/, "").replace(/<meta name="description"[^>]*>\s*/, "").replace(/<link rel="(preconnect|stylesheet)"[^>]*>\s*/g, "");
   const fallback = `<noscript><div style="max-width:640px;margin:24px auto;padding:0 16px;font-family:system-ui"><h1>${NAME}: ${TAGLINE}</h1><p>${esc(DESC)}</p><p><a href="/words">Browse all ${all.filter((p) => p.it.kind !== "origin").length} Greek roots and ideas</a> · <a href="/about">About</a></p></div></noscript>`;
-  const footer = `<footer class="site-foot" aria-label="More"><a href="/words">All ${all.length} words</a><a href="/about">About</a><a href="${REPO}">Open source</a><a href="${REPO}/tree/main/mcp">Use with your AI agent</a></footer>`;
+  const footer = `<footer class="site-foot" aria-label="More"><a href="/words">All ${all.length} words</a><a href="/about">About</a><a href="${REPO}">Open source</a><a href="${REPO}/tree/main/mcp">Use with your AI agent</a><a href="${AUTHOR_URL}">Made by ${AUTHOR}</a></footer>`;
   return `<!doctype html><html lang="en"><head>${head({ title: `${NAME}: ${TAGLINE}`, desc: DESC, path: "/", jsonld })}
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}
 .site-foot{max-width:560px;margin:-8px auto 0;display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:center;font:700 13px/1.4 Nunito,system-ui,sans-serif;padding:0 max(16px,env(safe-area-inset-right,0px)) calc(96px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
