@@ -6,7 +6,9 @@
   "scripts": {
     "studio": "remotion studio src/index.ts",
     "render": "remotion render src/index.ts SkepsisX out/skepsis-x.mp4 --codec=h264 --pixel-format=yuv420p --crf=20",
-    "poster": "remotion still src/index.ts SkepsisX out/poster.png --frame=138"
+    "poster": "remotion still src/index.ts SkepsisX out/poster.png --frame=138",
+    "render:reel": "remotion render src/index.ts SkepsisReel out/skepsis-reel.mp4 --codec=h264 --pixel-format=yuv420p --crf=20",
+    "cover:reel": "remotion still src/index.ts SkepsisReel out/reel-cover.png --frame=60"
   },
   "dependencies": {
     "@remotion/cli": "4.0.534",
