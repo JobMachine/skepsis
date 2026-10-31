@@ -17,8 +17,23 @@
     try { if (window.posthog && typeof window.posthog.capture === "function") window.posthog.capture(event, props); } catch { /* analytics must never break the app */ }
   }
 
+  const REPO = "https://github.com/ionpetro/skepsis";
+  /** GitHub link that asks people to star the repo. `where` says which button was clicked, for analytics. */
+  const starLink = (cls, where, inner) => `<a class="${cls}" href="${REPO}" target="_blank" rel="noopener" data-star="${where}" aria-label="Star Skepsis on GitHub">${inner}</a>`;
+  /** Bottom-of-screen note: open source, what we track and why, and a star prompt. The analytics line shows only where PostHog is loaded (the public website). */
+  function siteNote() {
+    const tracked = !!window.posthog;
+    return `<footer class="sitenote">
+      <p><b>Skepsis is free and open source</b> (MIT).${tracked ? " We use PostHog analytics to see how the app is used, including session recordings with anything you type hidden, so we can fix problems and make lessons better." : ""}</p>
+      ${starLink("btn ghost star-cta", "footer", `${I.github}<span>Star it on GitHub</span>`)}
+      <p class="sitenote-sub">A star helps other people find it.</p>
+    </footer>`;
+  }
+
   // ---------- icons ----------
   const I = {
+    github: '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.72 1.22 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>',
+    star: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.5 2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>',
     flame: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c1 3.5-1.6 5.3-2.9 7.3C7.6 11.5 7 13 7 14.6 7 18.1 9.3 21 12 21s5-2.6 5-6.2c0-2.1-.9-3.7-2-5 .1 1.6-.5 2.8-1.6 3.3.5-3.6-.6-7.6-1.4-11.1z"/></svg>',
     coin: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="currentColor"/><path d="M12 6.5 7.6 16.5h8.8z" fill="none" stroke="var(--surface)" stroke-width="2" stroke-linejoin="round"/></svg>',
     snow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 2v20M4 6.5l16 11M20 6.5 4 17.5M9.5 3.5 12 6l2.5-2.5M9.5 20.5 12 18l2.5 2.5"/></svg>',
@@ -235,6 +250,7 @@
         <span class="stat" title="Streak freezes" style="color:var(--brand)">${I.snow}<span>${S.freezes}</span></span>
         <span class="stat xp" title="Total XP">${I.coin}<span>${S.xp}</span></span>
       </div>
+      ${starLink("gh", "topbar", `${I.github}<span class="gh-label">${I.star}Star</span>`)}
     </header>`;
   }
   function tabbar() {
@@ -244,7 +260,7 @@
   function render() {
     if (!S.onboarded) { app().innerHTML = onboarding(); bindOnboarding(); return; }
     const body = { learn: learnView, agora: agoraView, teach: teachView, me: meView }[ui.tab]();
-    app().innerHTML = topbar() + `<main class="view">${body}</main>` + tabbar();
+    app().innerHTML = topbar() + `<main class="view">${body}${siteNote()}</main>` + tabbar();
     bindCommon();
     if (ui.tab === "agora") fillNames();
   }
@@ -265,9 +281,14 @@
       </div>
       <button class="btn block" id="ob-go">Saddle up</button>
       <p class="muted" style="text-align:center;font-size:13px;font-weight:700">Weekends never break your streak. No hearts, no penalties.</p>
+      ${siteNote()}
     </div>`;
   }
+  function bindStars(root) {
+    root.querySelectorAll("[data-star]").forEach((a) => a.addEventListener("click", () => track("github_star_clicked", { where: a.dataset.star })));
+  }
   function bindOnboarding() {
+    bindStars(app());
     app().querySelectorAll("[data-goal]").forEach((b) => b.addEventListener("click", () => { S.goal = +b.dataset.goal; render(); }));
     const ob = $("#ob-board"); if (ob) ob.addEventListener("change", (e) => { S.board = e.target.checked; });
     $("#ob-go").addEventListener("click", () => { S.onboarded = true; track("onboarding_completed", { goal_xp: S.goal }); save(); render(); startNode(E.nextNode(IX, S)); });
@@ -448,6 +469,7 @@
   function bindCommon() {
     const root = app();
     root.querySelectorAll("[data-tab]").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.tab)));
+    bindStars(root);
     root.querySelectorAll("[data-start]").forEach((b) => b.addEventListener("click", () => startNode(E.pathNodes(IX).find((n) => n.id === b.dataset.start))));
     root.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", () => { track("copied_for_slack", { item_id: b.dataset.copy, tab: ui.tab }); copyText(slackText(IX.items.get(b.dataset.copy))); }));
     root.querySelectorAll("[data-huddle]").forEach((b) => b.addEventListener("click", (e) => { e.stopPropagation(); openHuddle(b.dataset.huddle); }));

@@ -101,6 +101,32 @@ button { font: inherit; color: inherit; }
 :root[data-theme="dark"] .stat.xp { color: var(--gold); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .stat.xp { color: var(--gold); } }
 
+/* GitHub star button, top right */
+.gh {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; flex: none;
+  font-weight: 800; font-size: 14px; color: var(--ink); text-decoration: none;
+  background: var(--surface); border: 1px solid var(--line);
+}
+.gh:hover { border-color: var(--brand); color: var(--brand); }
+.gh svg { width: 18px; height: 18px; flex: none; }
+.gh-label { display: inline-flex; align-items: center; gap: 3px; }
+.gh-label svg { width: 14px; height: 14px; color: var(--gold-deep); }
+@media (max-width: 480px) { .wordmark small { display: none; } }
+@media (max-width: 430px) { .gh-label { display: none; } .gh { padding: 4px 8px; } }
+@media (max-width: 380px) { .stats { gap: 4px; } .stat { padding: 4px 8px; } }
+
+/* Bottom note: open source, analytics disclosure, star prompt */
+.sitenote {
+  margin-top: 12px; padding-top: 18px; border-top: 1px solid var(--line);
+  display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
+  font-size: 13px; font-weight: 600; color: var(--muted); line-height: 1.5;
+}
+.sitenote p { margin: 0; max-width: 46ch; }
+.sitenote b { color: var(--ink); }
+.sitenote .star-cta { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-size: 15px; padding: 10px 18px; }
+.sitenote .star-cta svg { width: 18px; height: 18px; }
+.sitenote-sub { font-size: 12px; }
+
 .view { display: flex; flex-direction: column; gap: 18px; padding-top: 18px; }
 h1, h2, h3 { margin: 0; text-wrap: balance; line-height: 1.15; }
 h1 { font-size: 26px; font-weight: 900; }

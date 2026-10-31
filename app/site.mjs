@@ -95,7 +95,7 @@ function nav() {
   return `<nav class="top" aria-label="Site"><a class="brand" href="/">Skepsis</a><a href="/words">All words</a><a href="/about">About</a><a href="${REPO}">GitHub</a></nav>`;
 }
 function foot() {
-  return `<footer><p>${NAME} is free and open source (MIT). Made by <a href="${AUTHOR_URL}">${AUTHOR}</a>. Etymologies checked against Etymonline and Merriam-Webster. <a href="${REPO}">Source on GitHub</a> · <a href="${REPO}/tree/main/mcp">Learn from your AI agent (MCP)</a></p></footer>`;
+  return `<footer><p>${NAME} is free and open source (MIT). Made by <a href="${AUTHOR_URL}">${AUTHOR}</a>. Etymologies checked against Etymonline and Merriam-Webster. ${POSTHOG_KEY ? "We use PostHog analytics, including session recordings with typed text hidden, to see how the site is used and improve it. " : ""}<a href="${REPO}">Source on GitHub</a> (a star helps others find it) · <a href="${REPO}/tree/main/mcp">Learn from your AI agent (MCP)</a></p></footer>`;
 }
 function page({ title, desc, path, body, jsonld, type }) {
   return `<!doctype html><html lang="en"><head>${head({ title, desc, path, jsonld, type })}<style>${PAGE_CSS}</style></head><body><div class="wrap">${nav()}${body}${foot()}</div></body></html>`;
