@@ -155,7 +155,65 @@
     return E.freshState();
   }
   let S = loadLocal();
-  const cloud = { db: null, user: null, uid: null, players: [], ready: false, canWrite: true };
+
+  // ---------- analytics helpers ----------
+  /** How far this player has got. Sent with every event, so any chart can be split by progress. */
+  function progressProps() {
+    const t = today();
+    return {
+      total_xp: S.xp,
+      today_xp: S.days[t] || 0,
+      goal_xp: S.goal,
+      streak: E.liveStreak(S, t),
+      learned: Object.keys(S.items).length,
+      lessons_done: Object.keys(S.done).length,
+      days_active: Object.keys(S.days).length,
+      onboarded: !!S.onboarded,
+    };
+  }
+  /** Refresh the progress numbers PostHog attaches to every event. */
+  function syncProgress() {
+    try { if (window.posthog && typeof window.posthog.register === "function") window.posthog.register(progressProps()); } catch { /* optional */ }
+  }
+  /** Whole days between two dayKeys ("YYYY-MM-DD"). */
+  const dayGap = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 864e5);
+  const VISIT_KEY = "skepsis.visit";
+  /**
+   * Once per page load: who is this (new or returning), where they first came from,
+   * and whether their streak broke since last time.
+   */
+  function trackAppOpened() {
+    if (!window.posthog) return;
+    let v = {};
+    try { v = JSON.parse(localStorage.getItem(VISIT_KEY) || "{}") || {}; } catch { /* storage can be blocked */ }
+    const t = today();
+    const qs = new URLSearchParams(location.search);
+    const campaign = {};
+    for (const k of ["utm_source", "utm_medium", "utm_campaign", "utm_content", "ref"]) if (qs.get(k)) campaign[k] = qs.get(k);
+    let refHost = null;
+    try { refHost = document.referrer ? new URL(document.referrer).hostname : null; } catch { /* bad referrer */ }
+    if (refHost === location.hostname) refHost = null;
+    const firstVisit = !v.first;
+    if (firstVisit) { v.first = t; v.source = campaign.utm_source || campaign.ref || refHost || "direct"; }
+    const daysSinceLast = v.last ? dayGap(v.last, t) : null;
+    v.last = t;
+    try { localStorage.setItem(VISIT_KEY, JSON.stringify(v)); } catch { /* fine */ }
+    try { window.posthog.register({ first_source: v.source, first_seen: v.first }); } catch { /* optional */ }
+    syncProgress();
+    const live = E.liveStreak(S, t);
+    const streakLost = S.streak > 0 && live === 0;
+    track("app_opened", { first_visit: firstVisit, returning: !firstVisit, days_since_last_visit: daysSinceLast, referrer_host: refHost, ...campaign, streak_lost: streakLost, entry_tab: location.hash.slice(1) || null });
+    if (streakLost) track("streak_lost", { lost_streak: S.streak, last_active: S.lastDay });
+  }
+  /** After XP is added: fire goal and streak events when they change. */
+  function trackDayProgress(prevTodayXp, st) {
+    const t = today();
+    const now = S.days[t] || 0;
+    if (prevTodayXp < S.goal && now >= S.goal) track("daily_goal_reached", { goal_xp: S.goal, today_xp: now });
+    if (st && st.streakUp) track("streak_extended", { streak: S.streak, best_streak: S.bestStreak, used_freeze: st.usedFreeze > 0 });
+  }
+
+  const cloud ={ db: null, user: null, uid: null, players: [], ready: false, canWrite: true };
   const queues = {};
   function enqueue(path, fn) {
     queues[path] = (queues[path] || Promise.resolve()).then(fn).catch((e) => {
@@ -166,6 +224,7 @@
   function save() {
     S.updatedAt = Date.now();
     try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch { /* fine */ }
+    syncProgress();
     if (cloud.db && cloud.uid && cloud.canWrite) {
       const snap = JSON.stringify(S);
       const xp = S.xp, at = S.updatedAt;
@@ -473,7 +532,7 @@
     root.querySelectorAll("[data-start]").forEach((b) => b.addEventListener("click", () => startNode(E.pathNodes(IX).find((n) => n.id === b.dataset.start))));
     root.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", () => { track("copied_for_slack", { item_id: b.dataset.copy, tab: ui.tab }); copyText(slackText(IX.items.get(b.dataset.copy))); }));
     root.querySelectorAll("[data-huddle]").forEach((b) => b.addEventListener("click", (e) => { e.stopPropagation(); openHuddle(b.dataset.huddle); }));
-    root.querySelectorAll("[data-goal]").forEach((b) => b.addEventListener("click", () => { S.goal = +b.dataset.goal; save(); render(); }));
+    root.querySelectorAll("[data-goal]").forEach((b) => b.addEventListener("click", () => { const from = S.goal; S.goal = +b.dataset.goal; if (from !== S.goal) track("goal_changed", { from_xp: from, to_xp: S.goal }); save(); render(); }));
     root.querySelectorAll("[data-filter]").forEach((b) => b.addEventListener("click", () => { ui.teachFilter = b.dataset.filter; render(); }));
     root.querySelectorAll("[data-board]").forEach((b) => b.addEventListener("click", () => { ui.boardMode = b.dataset.board; render(); }));
     const act = (a, fn) => { const el = root.querySelector(`[data-act="${a}"]`); if (el) el.addEventListener("click", fn); };
@@ -487,11 +546,11 @@
       const n = $("#teach-q"); n.focus(); n.setSelectionRange(pos, pos);
     });
     const jb = $("#join-board"); if (jb) jb.addEventListener("click", () => { S.board = true; save(); toast("You're on the board"); render(); });
-    const sb = $("#set-board"); if (sb) sb.addEventListener("change", (e) => { S.board = e.target.checked; save(); });
-    const ss = $("#set-sound"); if (ss) ss.addEventListener("change", (e) => { S.sound = e.target.checked; save(); });
+    const sb = $("#set-board"); if (sb) sb.addEventListener("change", (e) => { S.board = e.target.checked; track("setting_changed", { setting: "board", value: S.board }); save(); });
+    const ss = $("#set-sound"); if (ss) ss.addEventListener("change", (e) => { S.sound = e.target.checked; track("setting_changed", { setting: "sound", value: S.sound }); save(); });
     const rs = $("#reset"); if (rs) rs.addEventListener("click", () => { ui.confirmReset = true; render(); });
     const rn = $("#reset-no"); if (rn) rn.addEventListener("click", () => { ui.confirmReset = false; render(); });
-    const ry = $("#reset-yes"); if (ry) ry.addEventListener("click", () => { const keep = { board: S.board, sound: S.sound }; S = Object.assign(E.freshState(), keep); ui.confirmReset = false; save(); render(); });
+    const ry = $("#reset-yes"); if (ry) ry.addEventListener("click", () => { track("progress_reset", progressProps()); const keep = { board: S.board, sound: S.sound }; S = Object.assign(E.freshState(), keep); ui.confirmReset = false; save(); render(); });
   }
 
   // ---------- lesson runner ----------
@@ -516,8 +575,32 @@
   function runProps() {
     return run ? { mode: run.mode, lesson_id: run.node ? run.node.id : null, unit_id: run.node ? run.node.unitId : null } : {};
   }
+  /** What the player is looking at right now, for step-level events. */
+  function stepProps(q) {
+    const it = q && q.itemId ? IX.items.get(q.itemId) : null;
+    return {
+      step: run.i,
+      steps: run.steps.length,
+      step_type: q ? q.type : null,
+      item_id: (q && q.itemId) || null,
+      item_kind: it ? it.kind : null,
+      item_label: it ? E.labelOf(it) : (q && q.word) || null,
+      retry: !!q && q.label === "Try again",
+      guess: !!(q && q.guess),
+    };
+  }
   function closeRun() {
-    if (run && !run.finished) track(run.mode === "rodeo" ? "rodeo_quit" : "lesson_quit", { ...runProps(), step: run.i, steps: run.steps.length, answered: run.scored, rides: run.mode === "rodeo" ? run.right : undefined });
+    if (run && !run.finished) {
+      const q = run.steps[run.i];
+      track(run.mode === "rodeo" ? "rodeo_quit" : "lesson_quit", {
+        ...runProps(), ...stepProps(q),
+        answered: run.scored, right: run.right, misses: run.misses,
+        seconds: Math.round((Date.now() - run.start) / 1000),
+        seconds_on_step: run.stepAt ? Math.round((Date.now() - run.stepAt) / 1000) : null,
+        on_feedback: !!run.answered,
+        rides: run.mode === "rodeo" ? run.right : undefined,
+      });
+    }
     run = null; ui.overlay = null;
     const o = $(".lesson"); if (o) o.remove();
     clearTimeout(rodeoTimer);
@@ -546,6 +629,8 @@
     if (run.i >= run.steps.length) return finishRun();
     run.answered = false;
     const q = run.steps[run.i];
+    run.stepAt = Date.now();
+    track("lesson_step_viewed", { ...runProps(), ...stepProps(q) });
     if (q.type === "intro") return drawIntro(q);
     if (q.type === "intro-origin") return drawOriginIntro();
     if (q.type === "mcq") return drawMcq(q);
@@ -620,7 +705,7 @@
       else if (i === idx) b.classList.add("wrong");
       else b.classList.add("dim");
     });
-    resolve(q, ok, idx < 0 ? "Time's up!" : null);
+    resolve(q, ok, idx < 0 ? "Time's up!" : null, { chosen: idx >= 0 ? q.options[idx] : null });
   }
 
   function drawTf(q) {
@@ -640,7 +725,7 @@
       if (bv === q.answer) b.classList.add("right");
       else if (b === btn) b.classList.add("wrong");
     });
-    resolve(q, ok, v === null ? "Time's up!" : null);
+    resolve(q, ok, v === null ? "Time's up!" : null, { chosen: v === null ? null : v ? "Greek" : "Not Greek" });
   }
 
   function drawBuild(q) {
@@ -661,12 +746,12 @@
       run.answered = true;
       const got = placed.map((i) => q.tiles[i]);
       const ok = got.length === q.answer.length && got.every((t, i) => t === q.answer[i]);
-      resolve(q, ok);
+      resolve(q, ok, null, { chosen: got.join(" + ") });
     });
   }
 
   function drawMatch(q) {
-    let selL = null, selR = null, done = 0, bad = false;
+    let selL = null, selR = null, done = 0, mistakes = 0;
     const inner = `${header(q)}<p class="prompt">Tap a word, then its meaning</p><div class="match">
       <div class="mcol">${q.left.map((l) => `<button class="mbtn left" data-l="${esc(l)}">${esc(l)}</button>`).join("")}</div>
       <div class="mcol">${q.right.map((r) => `<button class="mbtn" data-r="${esc(r)}">${esc(r)}</button>`).join("")}</div></div>`;
@@ -677,9 +762,9 @@
       const ok = q.pairs.some(([a, b]) => a === selL && b === selR);
       if (ok) {
         sfx.right(); [lb, rb].forEach((b) => { b.classList.remove("sel"); b.classList.add("ok"); b.disabled = true; }); done++;
-        if (done === q.pairs.length) { run.answered = true; resolve(q, !bad); }
+        if (done === q.pairs.length) { run.answered = true; resolve(q, mistakes === 0, null, { mistakes }); }
       } else {
-        bad = true; sfx.wrong(); buzz(40);
+        mistakes += 1; sfx.wrong(); buzz(40);
         [lb, rb].forEach((b) => { b.classList.remove("sel"); b.classList.add("bad"); setTimeout(() => b.classList.remove("bad"), 350); });
       }
       selL = selR = null;
@@ -692,10 +777,26 @@
   const WRONG = ["Close, but no cigar.", "Shake it off, partner.", "That one bucked you. It'll come back around.", "Not quite. Even Odysseus took a wrong turn."];
   const GUESS = ["Good guess! Now let's learn it.", "Guessing first helps it stick. Here's the answer."];
 
-  function resolve(q, ok, why = null) {
+  /** The right answer as plain text, for analytics. */
+  function answerText(q) {
+    if (Array.isArray(q.answer)) return q.answer.join(" + ");
+    if (q.type === "tf") return q.answer ? "Greek" : "Not Greek";
+    return q.answer == null ? null : String(q.answer);
+  }
+  /** `detail` carries what the player picked (`chosen`) or, for matching, how many wrong pairs (`mistakes`). */
+  function resolve(q, ok, why = null, detail = {}) {
     clearTimeout(rodeoTimer);
     const t = today();
+    const answerProps = {
+      ...runProps(), ...stepProps(q),
+      type: q.type, label: q.label, correct: ok, timed_out: why === "Time's up!",
+      ms: run.stepAt ? Date.now() - run.stepAt : null,
+      chosen: detail.chosen === undefined ? null : detail.chosen,
+      answer: answerText(q),
+      mistakes: detail.mistakes === undefined ? null : detail.mistakes,
+    };
     if (q.guess) {
+      track("question_answered", { ...answerProps, graded: false });
       // pretest: no penalty, no grading, just reveal
       (ok ? sfx.right : sfx.tick)();
       showFeedback(true, ok ? "Nice instinct!" : pick(GUESS), q, true);
@@ -705,7 +806,7 @@
     if (ok) { run.right += 1; S.correct += 1; run.combo += 1; run.maxCombo = Math.max(run.maxCombo, run.combo); sfx.right(); buzz(15); }
     else { run.misses += 1; run.combo = 0; sfx.wrong(); buzz([30, 40, 30]); }
     if (q.itemId) E.grade(S, q.itemId, ok, t);
-    track("question_answered", { ...runProps(), item_id: q.itemId, type: q.type, label: q.label, correct: ok, timed_out: why === "Time's up!" });
+    track("question_answered", { ...answerProps, graded: true, combo: run.combo });
     if (run.mode === "rodeo") { showFeedback(ok, ok ? pick(RIGHT) : why || "Bucked off!", q); return; }
     if (!ok && !run.requeued.has(run.i)) {
       // missed questions come back at the end of the lesson
@@ -737,14 +838,17 @@
     const gained = base + bonus + comboBonus;
     const before = E.liveStreak(S, t);
     const wasActive = S.lastDay === t;
+    const prevTodayXp = S.days[t] || 0;
     E.addXp(S, t, gained);
     const st = E.touchStreak(S, t);
     if (run.mode === "practice") S.practices += 1;
+    const wasDone = !!(run.node && S.done[run.node.id]);
     if (run.node && (run.mode === "lesson" || run.mode === "roundup")) S.done[run.node.id] = { perfect, at: t };
     const fresh = E.awardBadges(S, t);
     save();
     run.finished = true;
-    track("lesson_completed", { ...runProps(), accuracy: run.scored ? run.right / run.scored : 1, perfect, xp: gained, seconds: Math.round((Date.now() - run.start) / 1000), max_combo: run.maxCombo, streak: S.streak, used_freeze: st.usedFreeze > 0, total_xp: S.xp, learned: Object.keys(S.items).length });
+    track("lesson_completed", { ...runProps(), accuracy: run.scored ? run.right / run.scored : 1, perfect, xp: gained, seconds: Math.round((Date.now() - run.start) / 1000), max_combo: run.maxCombo, streak: S.streak, used_freeze: st.usedFreeze > 0, total_xp: S.xp, learned: Object.keys(S.items).length, answered: run.scored, misses: run.misses, retries: run.requeued.size, first_time: !!run.node && !wasDone });
+    trackDayProgress(prevTodayXp, st);
     for (const b of fresh) track("badge_earned", { badge: b.id });
     const acc = run.scored ? Math.round((run.right / run.scored) * 100) : 100;
     const secs = Math.round((Date.now() - run.start) / 1000);
@@ -796,11 +900,14 @@
     const best = score > S.rodeoBest;
     if (best) S.rodeoBest = score;
     const gained = Math.min(score, 20);
-    if (gained > 0) { E.addXp(S, t, gained); E.touchStreak(S, t); }
+    const prevTodayXp = S.days[t] || 0;
+    let st = null;
+    if (gained > 0) { E.addXp(S, t, gained); st = E.touchStreak(S, t); }
     const fresh = E.awardBadges(S, t);
     save();
     run.finished = true;
-    track("rodeo_finished", { rides: score, best: S.rodeoBest, new_best: best && score > 0, xp: gained });
+    track("rodeo_finished", { rides: score, best: S.rodeoBest, new_best: best && score > 0, xp: gained, seconds: Math.round((Date.now() - run.start) / 1000) });
+    trackDayProgress(prevTodayXp, st);
     for (const b of fresh) track("badge_earned", { badge: b.id });
     if (best && score > 0) confetti();
     sfx.done();
@@ -839,7 +946,9 @@
     $("#hp").addEventListener("click", () => { if (huddle.i > 0) { huddle.i--; drawHuddle(); } });
     $("#hn").addEventListener("click", () => { if (huddle.i < huddle.its.length - 1) { huddle.i++; drawHuddle(); } else closeHuddle(); });
   }
-  function closeHuddle() { huddle = null; ui.overlay = null; const o = $(".huddle"); if (o) o.remove(); render(); }
+  function closeHuddle() {
+    if (huddle) track("huddle_closed", { unit_id: huddle.u.id, slide: huddle.i + 1, slides: huddle.its.length, finished: huddle.i === huddle.its.length - 1 });
+    huddle = null; ui.overlay = null; const o = $(".huddle"); if (o) o.remove(); render(); }
 
   // ---------- keyboard ----------
   addEventListener("keydown", (e) => {
@@ -865,6 +974,7 @@
   // ---------- boot ----------
   const h = location.hash.slice(1);
   if (TABS.some((t) => t.id === h)) ui.tab = h;
+  trackAppOpened();
   render();
   connect().catch((e) => { console.warn("[greek] connect", e); cloud.ready = true; rerenderTab(); });
 })();
