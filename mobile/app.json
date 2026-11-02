@@ -1,0 +1,83 @@
+{
+  "expo": {
+    "name": "Skepsis",
+    "slug": "skepsis",
+    "version": "1.0.0",
+    "description": "Learn the Greek roots, myths and big ideas hiding in everyday English, in 3-minute lessons. Free, open source, and your progress never leaves your phone.",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "skepsis",
+    "userInterfaceStyle": "automatic",
+    "githubUrl": "https://github.com/ionpetro/skepsis",
+    "ios": {
+      "bundleIdentifier": "com.ionpetro.skepsis",
+      "supportsTablet": false,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "privacyManifests": {
+        "NSPrivacyTracking": false,
+        "NSPrivacyTrackingDomains": [],
+        "NSPrivacyCollectedDataTypes": [
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeProductInteraction",
+            "NSPrivacyCollectedDataTypeLinked": false,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAnalytics"
+            ]
+          }
+        ]
+      }
+    },
+    "android": {
+      "package": "com.ionpetro.skepsis",
+      "adaptiveIcon": {
+        "backgroundColor": "#3446C9",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#3446C9",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 300
+        }
+      ],
+      "expo-audio",
+      "expo-sqlite",
+      [
+        "expo-notifications",
+        {
+          "color": "#3446C9"
+        }
+      ],
+      "expo-asset"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "80fc0963-b890-472a-8e6d-f40c5af5ea57"
+      }
+    },
+    "owner": "ionpetro"
+  }
+}

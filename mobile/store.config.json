@@ -1,0 +1,85 @@
+{
+  "configVersion": 0,
+  "apple": {
+    "copyright": "2026 Ion Petropoulos",
+    "categories": [
+      "EDUCATION",
+      "REFERENCE"
+    ],
+    "info": {
+      "en-US": {
+        "title": "Skepsis: Learn Greek Roots",
+        "subtitle": "Y'all already speak Greek",
+        "promoText": "Telephone, democracy, Achilles' heel: the Greek hiding in everyday English, in 3-minute lessons. Free forever, no ads.",
+        "description": "Y'all already speak Greek. Skepsis shows you where.\n\nTelephone, photograph, democracy, kleptomania, Achilles' heel, a Trojan horse: English is full of Greek. Skepsis teaches the roots, myths and big ideas behind those words in short, playful lessons, so you can decode words you've never seen.\n\nHOW IT WORKS\n- 3-minute lessons. Guess first, then learn: guessing before you're told helps it stick.\n- Learn a root with two words, then decode a third on your own.\n- Build words from their pieces, match pairs, and play \"Is it Greek?\" (rodeo is Spanish; butter is secretly Greek).\n- Spaced review brings words back after 1, 3, 7, 14 and 30 days.\n- Rodeo: a speed round with 8 seconds per question. One miss bucks you off.\n\nWHAT YOU'LL LEARN\n- Everyday roots: tele, phon, graph, photo, auto\n- Size and number: mega, micro, poly, mono\n- Medicine: cardio, derm, -itis\n- Power and people: democracy, -cracy, polis\n- Myths: Nike, Achilles' heel, the Trojan horse, mentor\n- Persuasion: ethos, pathos, logos, kairos, hubris\n- Stoic ideas: the dichotomy of control, eudaimonia\n\nKEEP GOING\nStreaks (weekends never break them, plus freezes), daily quests, badges, and drachmas to spend on hats for Homer the armadillo. No hearts, no lives, no punishment.\n\nFREE FOREVER, OPEN SOURCE\nSkepsis is free and always will be. No ads, no account, no in-app purchases. The code is open (MIT) at github.com/ionpetro/skepsis. Your progress stays on your phone. The only thing we collect is anonymous usage data (with PostHog) to make lessons better, and you can turn it off in Settings.",
+        "keywords": [
+          "greek",
+          "etymology",
+          "vocabulary",
+          "roots",
+          "words",
+          "english",
+          "myths",
+          "stoic",
+          "SAT",
+          "learn",
+          "language",
+          "quiz"
+        ],
+        "releaseNotes": "First release: 11 units of Greek roots, myths and ideas, the Rodeo speed round, daily quests and reminders.",
+        "marketingUrl": "https://skepsis-greek.vercel.app",
+        "supportUrl": "https://github.com/ionpetro/skepsis/issues",
+        "privacyPolicyUrl": "https://github.com/ionpetro/skepsis/blob/main/mobile/PRIVACY.md",
+        "screenshots": {
+          "APP_IPHONE_67": [
+            "./store/screenshots/en-US/01.png",
+            "./store/screenshots/en-US/02.png",
+            "./store/screenshots/en-US/03.png",
+            "./store/screenshots/en-US/04.png",
+            "./store/screenshots/en-US/05.png"
+          ]
+        }
+      }
+    },
+    "advisory": {
+      "alcoholTobaccoOrDrugUseOrReferences": "NONE",
+      "contests": "NONE",
+      "gamblingSimulated": "NONE",
+      "gunsOrOtherWeapons": "NONE",
+      "medicalOrTreatmentInformation": "NONE",
+      "profanityOrCrudeHumor": "NONE",
+      "sexualContentGraphicAndNudity": "NONE",
+      "sexualContentOrNudity": "NONE",
+      "horrorOrFearThemes": "NONE",
+      "matureOrSuggestiveThemes": "NONE",
+      "violenceCartoonOrFantasy": "NONE",
+      "violenceRealisticProlongedGraphicOrSadistic": "NONE",
+      "violenceRealistic": "NONE",
+      "unrestrictedWebAccess": false,
+      "gambling": false,
+      "lootBox": false,
+      "advertising": false,
+      "ageAssurance": false,
+      "healthOrWellnessTopics": false,
+      "messagingAndChat": false,
+      "parentalControls": false,
+      "userGeneratedContent": false,
+      "kidsAgeBand": null,
+      "seventeenPlus": false,
+      "ageRatingOverride": "NONE",
+      "koreaAgeRatingOverride": "NONE"
+    },
+    "release": {
+      "automaticRelease": true,
+      "phasedRelease": false
+    },
+    "review": {
+      "firstName": "Ion",
+      "lastName": "Petropoulos",
+      "email": "ionpetro@gmail.com",
+      "phone": "REPLACE_WITH_PHONE",
+      "demoRequired": false,
+      "notes": "No login or account. Open the app, pick a daily goal, and tap the first lesson. Everything is free: no in-app purchases, no ads. Daily reminders are local notifications scheduled on the device (no push server). Anonymous usage analytics (PostHog) can be turned off in Me > Settings. The app is open source: https://github.com/ionpetro/skepsis"
+    }
+  }
+}
