@@ -53,6 +53,7 @@
   function siteNote() {
     const tracked = !!window.posthog;
     return `<footer class="sitenote">
+      <p class="sister">Sister app: <a href="https://carpe-latin.vercel.app/?utm_source=skepsis&utm_medium=sister_link" target="_blank" rel="noopener">Carpe</a>, playful Latin for Greece's national exams.</p>
       <p><b>Skepsis is free and always will be. The code is open (MIT).</b>${tracked ? " The only thing we do is measure how it's used with PostHog, so we can make it better. No account, no ads, and session recordings hide anything you type." : " No account, no ads."}</p>
       ${starLink("btn ghost star-cta", "footer", `${I.github}<span>Star it on GitHub</span>`)}
       <p class="sitenote-sub">A star helps other people find it.</p>
@@ -61,6 +62,7 @@
 
   // ---------- icons ----------
   const I = {
+    trophy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8M9.5 17h5"/></svg>',
     github: '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.72 1.22 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>',
     star: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.5 2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>',
     flame: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c1 3.5-1.6 5.3-2.9 7.3C7.6 11.5 7 13 7 14.6 7 18.1 9.3 21 12 21s5-2.6 5-6.2c0-2.1-.9-3.7-2-5 .1 1.6-.5 2.8-1.6 3.3.5-3.6-.6-7.6-1.4-11.1z"/></svg>',
@@ -305,10 +307,10 @@
 
   // ---------- UI state ----------
   const ui = { tab: "learn", overlay: null, teachFilter: "all", teachQuery: "", boardMode: "week", confirmReset: false };
-  // The team board needs claude.ai's shared storage, so the public website leaves it out.
+  // The team board needs claude.ai's shared storage; the public website gets the anonymous weekly board instead.
   const TABS = [
     { id: "learn", label: "Learn", icon: I.trail },
-    IN_CLAUDE && { id: "agora", label: "Team", icon: I.temple },
+    IN_CLAUDE ? { id: "agora", label: "Team", icon: I.temple } : { id: "board", label: "Board", icon: I.trophy },
     { id: "teach", label: "Teach", icon: I.scroll },
     { id: "me", label: "Me", icon: I.helmet },
   ].filter(Boolean);
@@ -347,10 +349,85 @@
 
   function render() {
     if (!S.onboarded) { app().innerHTML = onboarding(); bindOnboarding(); return; }
-    const body = { learn: learnView, agora: agoraView, teach: teachView, me: meView }[ui.tab]();
+    const body = { learn: learnView, agora: agoraView, board: boardView, teach: teachView, me: meView }[ui.tab]();
     app().innerHTML = topbar() + `<main class="view">${body}${siteNote()}</main>` + tabbar();
     bindCommon();
     if (ui.tab === "agora") fillNames();
+  }
+
+  // ---------- weekly board (public website) ----------
+  // No database: every few hours a job adds up each player's XP for the week from the anonymous
+  // PostHog events we already send, and publishes it as a small file. Players appear under a name
+  // made from a hash of their anonymous PostHog id; raw ids are never published. Your own row uses
+  // your live XP from this browser.
+  const BOARD_URL = "https://skepsis-carpe-boards.vercel.app/skepsis.json";
+  const board = { data: null, loading: false, failed: false, me: null };
+  const NAME_A = ["Swift", "Bold", "Clever", "Mighty", "Wise", "Brave", "Sunny", "Lucky", "Quick", "Noble", "Steady", "Witty", "Daring", "Gentle", "Fierce", "Bright"];
+  const NAME_B = ["Owl", "Pegasus", "Centaur", "Griffin", "Sphinx", "Phoenix", "Cyclops", "Satyr", "Minotaur", "Siren", "Hydra", "Titan", "Nymph", "Muse", "Oracle", "Armadillo"];
+  const nickname = (h) => `${NAME_A[parseInt(h.slice(0, 4), 16) % NAME_A.length]} ${NAME_B[parseInt(h.slice(4, 8), 16) % NAME_B.length]}`;
+  /** A random id kept on this device, for the name you see when PostHog is blocked. */
+  function localBoardId() {
+    try {
+      let v = localStorage.getItem("skepsis-board-id");
+      if (!v) { v = [...crypto.getRandomValues(new Uint8Array(6))].map((b) => b.toString(16).padStart(2, "0")).join(""); localStorage.setItem("skepsis-board-id", v); }
+      return v;
+    } catch { return "a1b2c3d4e5f6"; }
+  }
+  async function loadBoard() {
+    if (board.loading) return;
+    board.loading = true; board.failed = false;
+    try {
+      const res = await fetch(BOARD_URL, { cache: "no-store" });
+      if (!res.ok) throw new Error(String(res.status));
+      board.data = await res.json();
+    } catch { board.failed = true; }
+    try {
+      const id = window.posthog && typeof window.posthog.get_distinct_id === "function" ? window.posthog.get_distinct_id() : null;
+      if (id && crypto.subtle) {
+        const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("skepsis:" + id));
+        board.me = [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 12);
+      }
+    } catch { /* no id: you still see the board, just under a local name */ }
+    board.loading = false;
+    if (ui.tab === "board" && !ui.overlay) render();
+  }
+  function boardView() {
+    if (!board.data && !board.failed) { loadBoard(); return `<section class="card empty">${mascot()}<p>Loading this week's board…</p></section>`; }
+    if (!board.data) return `<section class="card empty">${mascot("sad")}<p>The board won't load right now. Try again later.</p></section>`;
+    const t = today(), wk = E.weekKey(t), d = board.data;
+    const sameWeek = d.week === wk;
+    const meH = board.me || localBoardId();
+    const myXp = E.weekXp(S, t);
+    const others = sameWeek ? d.top.filter((p) => p.h !== meH) : [];
+    const mine = sameWeek ? d.top.find((p) => p.h === meH) : null;
+    const allXp = sameWeek ? d.all_xp.slice() : [];
+    if (mine) allXp.splice(allXp.indexOf(mine.xp), 1);
+    const total = allXp.length + (myXp > 0 ? 1 : 0);
+    const rank = myXp > 0 ? 1 + allXp.filter((x) => x > myXp).length : null;
+    const rows = others.map((p) => ({ ...p, you: false }));
+    if (myXp > 0) rows.push({ h: meH, xp: myXp, l: null, s: E.liveStreak(S, t), you: true });
+    rows.sort((a, b) => b.xp - a.xp || (a.you ? -1 : 1));
+    const shown = rows.slice(0, 20);
+    const meRow = rows.find((r) => r.you);
+    const tail = meRow && !shown.includes(meRow) ? meRow : null;
+    const hrs = Math.max(0, Math.floor((Date.now() - new Date(d.updated).getTime()) / 3600000));
+    const row = (p, i) => `<div class="prow ${p.you ? "me" : ""}">
+        <span class="rank ${i < 3 ? "top" : ""}">${i + 1}</span>
+        <span class="av" style="--h:${parseInt(p.h.slice(0, 3), 16) % 360 || 30}">${esc(nickname(p.h)[0])}</span>
+        <div style="min-width:0"><div class="nm">${p.you ? "You · " : ""}${esc(nickname(p.h))}</div><div class="sub">${I.flame.replace("<svg", '<svg width="12" height="12" style="color:var(--flame);vertical-align:-1px"')} ${p.s || 0} day streak${p.l != null ? " · " + p.l + (p.l === 1 ? " lesson" : " lessons") : ""}</div></div>
+        <span class="pts">${p.xp} XP</span>
+      </div>`;
+    return `
+      <section style="display:flex;flex-direction:column;gap:6px"><div class="eyebrow">The Agora · this week</div><h1>Weekly board</h1>
+        <p class="muted" style="font-weight:700">Resets every Monday. Everyone shows up under a made-up name. Yours is <b>${esc(nickname(meH))}</b>.</p></section>
+      <section class="card" style="display:flex;flex-direction:column;gap:6px">
+        ${rank ? `<h3>You're #${rank} of ${total} this week${total >= 5 ? ` · top ${Math.max(1, Math.ceil((rank / total) * 100))}%` : ""}</h3>` : `<h3>Finish a lesson to join this week's board</h3>`}
+        <p class="muted" style="font-weight:700;font-size:14px">${myXp} XP this week · board updated ${hrs < 1 ? "under an hour" : hrs === 1 ? "1 hour" : hrs + " hours"} ago</p>
+      </section>
+      <section class="card" style="display:flex;flex-direction:column;gap:10px">
+        ${rows.length ? `<div class="board">${shown.map(row).join("")}${tail ? `<div class="prow gap">…</div>${row(tail, rank - 1)}` : ""}</div>` : `<div class="empty">${mascot()}<p class="muted" style="font-weight:700">Nobody has earned XP this week yet. Finish a lesson to take first place.</p></div>`}
+      </section>
+      <p class="muted" style="font-size:13px;font-weight:700;text-align:center">Built from the anonymous usage numbers we already measure with PostHog. No names, no accounts, nothing new stored. Your spot updates live; everyone else every few hours.</p>`;
   }
 
   // ---------- onboarding ----------
