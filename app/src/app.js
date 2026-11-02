@@ -24,7 +24,7 @@
   function siteNote() {
     const tracked = !!window.posthog;
     return `<footer class="sitenote">
-      <p><b>Skepsis is free and open source</b> (MIT).${tracked ? " We use PostHog analytics to see how the app is used, including session recordings with anything you type hidden, so we can fix problems and make lessons better." : ""}</p>
+      <p><b>Skepsis is free and always will be. The code is open (MIT).</b>${tracked ? " The only thing we do is measure how it's used with PostHog, so we can make it better. No account, no ads, and session recordings hide anything you type." : " No account, no ads."}</p>
       ${starLink("btn ghost star-cta", "footer", `${I.github}<span>Star it on GitHub</span>`)}
       <p class="sitenote-sub">A star helps other people find it.</p>
     </footer>`;

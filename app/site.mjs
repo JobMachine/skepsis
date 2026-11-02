@@ -95,7 +95,7 @@ function nav() {
   return `<nav class="top" aria-label="Site"><a class="brand" href="/">Skepsis</a><a href="/words">All words</a><a href="/about">About</a><a href="${REPO}">GitHub</a></nav>`;
 }
 function foot() {
-  return `<footer><p>${NAME} is free and open source (MIT). Made by <a href="${AUTHOR_URL}">${AUTHOR}</a>. Etymologies checked against Etymonline and Merriam-Webster. ${POSTHOG_KEY ? "We use PostHog analytics, including session recordings with typed text hidden, to see how the site is used and improve it. " : ""}<a href="${REPO}">Source on GitHub</a> (a star helps others find it) · <a href="${REPO}/tree/main/mcp">Learn from your AI agent (MCP)</a></p></footer>`;
+  return `<footer><p><b>${NAME} is free and always will be. The code is open (MIT): <a href="${REPO}">GitHub</a>.</b> Made by <a href="${AUTHOR_URL}">${AUTHOR}</a>. Etymologies checked against Etymonline and Merriam-Webster. ${POSTHOG_KEY ? "The only thing we do is measure how it's used with PostHog, so we can make it better. No account, no ads; session recordings hide anything you type. " : "No account, no ads. "}<a href="${REPO}">Source on GitHub</a> (a star helps others find it) · <a href="${REPO}/tree/main/mcp">Learn from your AI agent (MCP)</a></p></footer>`;
 }
 function page({ title, desc, path, body, jsonld, type }) {
   return `<!doctype html><html lang="en"><head>${head({ title, desc, path, jsonld, type })}<style>${PAGE_CSS}</style></head><body><div class="wrap">${nav()}${body}${foot()}</div></body></html>`;
@@ -153,7 +153,7 @@ function aboutPage(all) {
     <h2>Learn from your AI agent</h2><p>Skepsis ships an MCP server, so Claude, Cursor or any MCP-capable agent can tutor you with the same lessons and spaced review:</p>
     <pre class="card" style="overflow-x:auto;font-size:14px">claude mcp add skepsis -- npx -y github:ionpetro/skepsis</pre>
     <h2>Open source</h2><p>Code and content are MIT-licensed on <a href="${REPO}">GitHub</a>. Corrections and new words are welcome.</p>
-    <h2>Privacy</h2><p>No accounts and no sign-up. Your progress stays in your browser. The site counts visits and lesson results anonymously with PostHog so we can see which words are hard and whether lessons help.</p>
+    <h2>Free, open, and what we measure</h2><p>${NAME} is free and always will be. The code is open under the MIT license: <a href="${REPO}">${REPO.replace("https://", "")}</a>. No account, no sign-up, no ads. Your progress stays in your browser. The only thing we do is measure how it's used with <a href="https://posthog.com">PostHog</a> (visits, lesson results, which words are hard, and session recordings with anything you type hidden), so we can make it better.</p>
     <a class="cta" href="/">Start learning, free</a>`;
   return page({ title: `About ${NAME}: Greek roots in 3 minutes a day`, desc: DESC, path: "/about", body, jsonld: [{ "@context": "https://schema.org", "@type": "AboutPage", name: `About ${NAME}`, url: `${SITE}/about` }] });
 }
