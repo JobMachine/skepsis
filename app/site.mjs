@@ -21,15 +21,15 @@ const POSTHOG_KEY = process.env.POSTHOG_KEY || "";
 const POSTHOG_HOST = process.env.POSTHOG_HOST || "https://us.i.posthog.com";
 function analytics() {
   if (!POSTHOG_KEY) return "";
-  if (!/^phc_[A-Za-z0-9]+$/.test(POSTHOG_KEY)) throw new Error("POSTHOG_KEY must be a PostHog project key (phc_...)");
+  if (!/^phc_[A-Za-z0-9_-]+$/.test(POSTHOG_KEY)) throw new Error("POSTHOG_KEY must be a PostHog project key (phc_...)");
   // Official PostHog loader. Anonymous visitors only (no person profiles), inputs masked in replays.
   return `<script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog&&window.posthog.__loaded)||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags identify setPersonProperties group resetGroups reset get_distinct_id get_session_id alias set_config startSessionRecording stopSessionRecording captureException opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
 posthog.init(${JSON.stringify(POSTHOG_KEY)},{api_host:${JSON.stringify(POSTHOG_HOST)},defaults:"2025-05-24",person_profiles:"identified_only",session_recording:{maskAllInputs:true}});
 posthog.register({app:"skepsis",surface:"web"});</script>`;
 }
 
-const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const slug = (s) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/'/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const esc = (s) => (s == null ? "" : String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])));
+const slug = (s) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/['’‘ʼ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 /** Every item with its unit, lesson, a URL slug and plain-text title/description for SEO. */
 export function pages() {
@@ -37,7 +37,7 @@ export function pages() {
   for (const u of COURSE.units) for (const l of u.lessons) for (const it of l.items) {
     let s, title, h1, desc;
     if (it.kind === "root") {
-      s = it.id;
+      s = slug(it.id);
       title = `${it.root}: Greek root meaning "${it.m}"`;
       h1 = it.root;
       desc = `${it.root} (${it.gr}) means "${it.m}". ${it.say} Examples: ${it.ex.map((e) => e[0]).join(", ")}.`;
@@ -54,19 +54,25 @@ export function pages() {
     }
     out.push({ it, unit: u, lesson: l, slug: s, title, h1, desc: desc.slice(0, 300) });
   }
+  const seen = new Set();
+  for (const p of out) {
+    if (seen.has(p.slug)) throw new Error(`Slug collision: ${p.slug}`);
+    seen.add(p.slug);
+  }
   return out;
 }
 
 const FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Nunito:wght@400;600;700;800;900&family=Rye&display=swap">';
 const ICONS = '<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#3446c9">';
 
-function head({ title, desc, path, type = "website", jsonld = [] }) {
+function head({ title, desc, path, type = "website", jsonld = [], noindex = false }) {
   const url = SITE + path;
+  const robots = noindex ? '<meta name="robots" content="noindex, follow">\n' : "";
+  const canonical = noindex ? "" : `<link rel="canonical" href="${url}">\n`;
   return `<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
-<link rel="canonical" href="${url}">
-<meta property="og:type" content="${type}"><meta property="og:site_name" content="${NAME}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${url}"><meta property="og:image" content="${SITE}/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Skepsis: Y'all already speak Greek">
+${robots}${canonical}<meta property="og:type" content="${type}"><meta property="og:site_name" content="${NAME}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${url}"><meta property="og:image" content="${SITE}/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Skepsis: Y'all already speak Greek">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(desc)}"><meta name="twitter:image" content="${SITE}/og.png">
 ${ICONS}${FONTS}${analytics()}
 ${jsonld.map((j) => `<script type="application/ld+json">${JSON.stringify(j).replace(/</g, "\\u003c")}</script>`).join("\n")}`;
@@ -97,8 +103,8 @@ function nav() {
 function foot() {
   return `<footer><p><b>${NAME} is free and always will be. The code is open (MIT): <a href="${REPO}">GitHub</a>.</b> Made by <a href="${AUTHOR_URL}">${AUTHOR}</a>. Etymologies checked against Etymonline and Merriam-Webster. ${POSTHOG_KEY ? "The only thing we do is measure how it's used with PostHog, so we can make it better. No account, no ads; session recordings hide anything you type. " : "No account, no ads. "}<a href="${REPO}">Source on GitHub</a> (a star helps others find it) · <a href="${REPO}/tree/main/mcp">Learn from your AI agent (MCP)</a></p></footer>`;
 }
-function page({ title, desc, path, body, jsonld, type }) {
-  return `<!doctype html><html lang="en"><head>${head({ title, desc, path, jsonld, type })}<style>${PAGE_CSS}</style></head><body><div class="wrap">${nav()}${body}${foot()}</div></body></html>`;
+function page({ title, desc, path, body, jsonld, type, noindex = false }) {
+  return `<!doctype html><html lang="en"><head>${head({ title, desc, path, jsonld, type, noindex })}<style>${PAGE_CSS}</style></head><body><div class="wrap">${nav()}${body}${foot()}</div></body></html>`;
 }
 
 function wordPage(p, all) {
@@ -159,7 +165,7 @@ function aboutPage(all) {
 }
 
 function notFound() {
-  return page({ title: `Not found | ${NAME}`, desc: DESC, path: "/404", body: `<h1>Lost like Odysseus</h1><p class="say">This page doesn't exist. It took him ten years to get home; it'll take you one click.</p><a class="cta" href="/">Back home</a> <a class="cta" href="/words" style="background:var(--olive);box-shadow:0 4px 0 #356a1b">All words</a>`, jsonld: [] });
+  return page({ title: `Not found | ${NAME}`, desc: DESC, path: "/404", body: `<h1>Lost like Odysseus</h1><p class="say">This page doesn't exist. It took him ten years to get home; it'll take you one click.</p><a class="cta" href="/">Back home</a> <a class="cta" href="/words" style="background:var(--olive);box-shadow:0 4px 0 #356a1b">All words</a>`, jsonld: [], noindex: true });
 }
 
 /** The app at "/": full document, SEO head, static fallback content for crawlers and no-JS. */

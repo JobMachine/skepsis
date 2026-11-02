@@ -4,6 +4,7 @@
   "description": "Learn Greek roots, myths and big ideas in 3 minutes a day. Web app + MCP server for your AI agent.",
   "license": "MIT",
   "bin": {
+    "skepsis": "mcp/server.js",
     "skepsis-mcp": "mcp/server.js"
   },
   "files": [
@@ -14,10 +15,10 @@
     "app/src/engine.js"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=18.8.0"
   },
   "scripts": {
-    "test": "node --test app/test/engine.test.js mcp/test/server.test.mjs",
+    "test": "node --test app/test/engine.test.js mcp/test/lib.test.mjs mcp/test/server.test.mjs",
     "build": "node app/build.mjs",
     "mcp": "node mcp/server.js"
   },

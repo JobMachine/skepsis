@@ -2,9 +2,12 @@
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync } from "node:fs";
 // Load app/.env (optional) before site.mjs reads POSTHOG_KEY. Format: KEY=value per line.
 try {
-  for (const line of readFileSync(new URL("./.env", import.meta.url), "utf8").split("\n")) {
+  for (const line of readFileSync(new URL("./.env", import.meta.url), "utf8").split(/\r?\n/)) {
     const m = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*?)\s*$/);
-    if (m && !(m[1] in process.env)) process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+    if (m && !(m[1] in process.env)) {
+      const val = m[2].replace(/\s+#.*$/, "").trim();
+      process.env[m[1]] = val.replace(/^(['"])(.*)\1$/, "$2");
+    }
   }
 } catch { /* no .env: build without analytics */ }
 const { buildSite } = await import("./site.mjs");
@@ -22,5 +25,7 @@ console.log(`dist/index.html ${(out.length / 1024).toFixed(0)} KB`);
 // Public website for Vercel: the app plus static SEO pages (see site.mjs) and the images in public/.
 const siteDir = new URL("./vercel/", import.meta.url);
 const n = buildSite(out, siteDir);
-for (const f of readdirSync(new URL("./public/", import.meta.url))) copyFileSync(new URL(`./public/${f}`, import.meta.url), new URL(f, siteDir));
+for (const f of readdirSync(new URL("./public/", import.meta.url))) {
+  if (!f.startsWith(".")) copyFileSync(new URL(`./public/${f}`, import.meta.url), new URL(f, siteDir));
+}
 console.log(`vercel/: app + ${n} word pages, analytics ${process.env.POSTHOG_KEY ? "ON" : "off (no POSTHOG_KEY in app/.env)"}`);

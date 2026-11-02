@@ -1,3 +1,4 @@
+import React from "react";
 import { C } from "./theme";
 
 // Homer the armadillo, ported from mascot() in app/src/app.js.
