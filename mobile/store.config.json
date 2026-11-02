@@ -32,11 +32,11 @@
         "privacyPolicyUrl": "https://github.com/ionpetro/skepsis/blob/main/mobile/PRIVACY.md",
         "screenshots": {
           "APP_IPHONE_67": [
-            "./store/screenshots/en-US/01.png",
-            "./store/screenshots/en-US/02.png",
-            "./store/screenshots/en-US/03.png",
-            "./store/screenshots/en-US/04.png",
-            "./store/screenshots/en-US/05.png"
+            "./store/screenshots/en-US/01-roots-everywhere.png",
+            "./store/screenshots/en-US/02-three-minute-lessons.png",
+            "./store/screenshots/en-US/03-rodeo-speed-round.png",
+            "./store/screenshots/en-US/04-every-word-has-a-story.png",
+            "./store/screenshots/en-US/05-free-open-source.png"
           ]
         }
       }
