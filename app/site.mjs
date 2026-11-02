@@ -65,15 +65,18 @@ export function pages() {
 const FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Nunito:wght@400;600;700;800;900&family=Rye&display=swap">';
 const ICONS = '<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#3446c9">';
 
-function head({ title, desc, path, type = "website", jsonld = [], noindex = false }) {
+function head({ title, desc, path, type = "website", jsonld = [], noindex = false, keywords = "" }) {
   const url = SITE + path;
   const robots = noindex ? '<meta name="robots" content="noindex, follow">\n' : "";
   const canonical = noindex ? "" : `<link rel="canonical" href="${url}">\n`;
+  const kw = keywords ? `<meta name="keywords" content="${esc(keywords)}">\n` : "";
+  const articleMeta = type === "article" ? '<meta property="article:section" content="Etymology">\n' : "";
   return `<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
-${robots}${canonical}<meta property="og:type" content="${type}"><meta property="og:site_name" content="${NAME}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${url}"><meta property="og:image" content="${SITE}/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Skepsis: Y'all already speak Greek">
-<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(desc)}"><meta name="twitter:image" content="${SITE}/og.png">
+<meta name="author" content="${esc(AUTHOR)}">
+${kw}${robots}${canonical}<meta property="og:type" content="${type}"><meta property="og:site_name" content="${NAME}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${url}"><meta property="og:image" content="${SITE}/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Skepsis: Y'all already speak Greek"><meta property="og:locale" content="en_US">
+${articleMeta}<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(desc)}"><meta name="twitter:image" content="${SITE}/og.png">
 ${ICONS}${FONTS}${analytics()}
 ${jsonld.map((j) => `<script type="application/ld+json">${JSON.stringify(j).replace(/</g, "\\u003c")}</script>`).join("\n")}`;
 }
@@ -103,8 +106,8 @@ function nav() {
 function foot() {
   return `<footer><p><b>${NAME} is free and always will be. The code is open (MIT): <a href="${REPO}">GitHub</a>.</b> Made by <a href="${AUTHOR_URL}">${AUTHOR}</a>. Etymologies checked against Etymonline and Merriam-Webster. ${POSTHOG_KEY ? "The only thing we do is measure how it's used with PostHog, so we can make it better. No account, no ads; session recordings hide anything you type. " : "No account, no ads. "}<a href="${REPO}">Source on GitHub</a> (a star helps others find it) · <a href="${REPO}/tree/main/mcp">Learn from your AI agent (MCP)</a></p></footer>`;
 }
-function page({ title, desc, path, body, jsonld, type, noindex = false }) {
-  return `<!doctype html><html lang="en"><head>${head({ title, desc, path, jsonld, type, noindex })}<style>${PAGE_CSS}</style></head><body><div class="wrap">${nav()}${body}${foot()}</div></body></html>`;
+function page({ title, desc, path, body, jsonld, type, noindex = false, keywords = "" }) {
+  return `<!doctype html><html lang="en"><head>${head({ title, desc, path, jsonld, type, noindex, keywords })}<style>${PAGE_CSS}</style></head><body><div class="wrap">${nav()}${body}${foot()}</div></body></html>`;
 }
 
 function wordPage(p, all) {
@@ -127,22 +130,32 @@ function wordPage(p, all) {
   }
   body += `<a class="cta" href="/#learn">Practice it in Skepsis</a>
     <h2>More from “${esc(unit.title)}”</h2><div class="grid">${siblings.map((x) => `<a href="/words/${x.slug}"><b>${esc(x.it.kind === "origin" ? x.it.w : x.h1)}</b><span>${esc(x.it.kind === "origin" ? (x.it.greek ? "Greek" : "Not Greek") : x.it.m)}</span></a>`).join("")}</div>`;
+  const keywords = it.kind === "root"
+    ? `${it.root}, greek root ${it.root}, ${it.root} meaning, ${it.ex.map((e) => e[0]).join(", ")}, greek etymology`
+    : it.kind === "idea"
+      ? `${it.term}, ${it.term} greek origin, ${it.term} meaning, greek philosophy`
+      : `is ${it.w} greek, ${it.w} etymology, origin of ${it.w}`;
   const jsonld = [
     it.kind === "origin"
       ? { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: [{ "@type": "Question", name: p.title, acceptedAnswer: { "@type": "Answer", text: `${it.greek ? "Yes" : "No"}. ${it.from}` } }] }
-      : { "@context": "https://schema.org", "@type": "DefinedTerm", name: p.h1, alternateName: it.gr, description: it.kind === "root" ? `${it.m}. ${it.say}` : `${it.m}. ${it.story}`, inDefinedTermSet: { "@type": "DefinedTermSet", name: "Skepsis: Greek roots and ideas in English", url: `${SITE}/words` }, url: `${SITE}/words/${p.slug}` },
-    { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "All words", item: `${SITE}/words` }, { "@type": "ListItem", position: 2, name: p.h1, item: `${SITE}/words/${p.slug}` }] },
+      : { "@context": "https://schema.org", "@type": "DefinedTerm", name: p.h1, alternateName: it.gr, description: it.kind === "root" ? `${it.m}. ${it.say}` : `${it.m}. ${it.story}`, inLanguage: "en", inDefinedTermSet: { "@type": "DefinedTermSet", name: "Skepsis: Greek roots and ideas in English", url: `${SITE}/words` }, url: `${SITE}/words/${p.slug}` },
+    { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Home", item: `${SITE}/` }, { "@type": "ListItem", position: 2, name: "All words", item: `${SITE}/words` }, { "@type": "ListItem", position: 3, name: p.h1, item: `${SITE}/words/${p.slug}` }] },
   ];
-  return page({ title: `${p.title} | ${NAME}`, desc: p.desc, path: `/words/${p.slug}`, body, jsonld, type: "article" });
+  return page({ title: `${p.title} | ${NAME}`, desc: p.desc, path: `/words/${p.slug}`, body, jsonld, type: "article", keywords });
 }
 
 function indexPage(all) {
   const greek = all.filter((p) => p.it.kind !== "origin").length;
   const body = `<h1>Greek in everyday English</h1><p class="say">${greek} Greek roots, myths and ideas you already use, plus a round of "Is it Greek?", each with real examples, the original Greek and a one-line way to explain it.</p>
+    <div style="margin:20px 0 16px"><input id="q" type="search" placeholder="Search ${all.length} Greek roots, words or meanings…" style="width:100%;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit" aria-label="Search Greek words and roots"></div>
     ${COURSE.units.map((u, i) => `<h2>${i + 1}. ${esc(u.title)}</h2><p style="margin:0 0 8px;color:var(--muted);font-weight:700">${esc(u.blurb)}</p><div class="grid">${all.filter((p) => p.unit.id === u.id).map((p) => `<a href="/words/${p.slug}"><b>${esc(p.it.kind === "origin" ? p.it.w : p.h1)}</b><span>${esc(p.it.kind === "origin" ? (p.it.greek ? "Greek" : "Not Greek") : p.it.m)}</span></a>`).join("")}</div>`).join("")}
-    <a class="cta" href="/">Start learning, free</a>`;
-  const jsonld = [{ "@context": "https://schema.org", "@type": "DefinedTermSet", name: "Skepsis: Greek roots and ideas in English", url: `${SITE}/words`, hasDefinedTerm: all.filter((p) => p.it.kind !== "origin").map((p) => ({ "@type": "DefinedTerm", name: p.h1, url: `${SITE}/words/${p.slug}` })) }];
-  return page({ title: `Greek roots and ideas in English: the full list | ${NAME}`, desc: `All ${greek} Greek roots, myths and ideas taught in Skepsis, from tele and photo to hubris and kudos, with meanings, examples and the original Greek.`, path: "/words", body, jsonld });
+    <a class="cta" href="/">Start learning, free</a>
+    <script>document.getElementById("q")?.addEventListener("input",function(e){var v=e.target.value.toLowerCase().trim();document.querySelectorAll(".grid a").forEach(function(a){a.style.display=(!v||a.textContent.toLowerCase().includes(v))?"":"none";});});</script>`;
+  const jsonld = [
+    { "@context": "https://schema.org", "@type": "DefinedTermSet", name: "Skepsis: Greek roots and ideas in English", description: "Curated directory of 127 Greek roots, myths, and ideas in everyday English.", inLanguage: "en", url: `${SITE}/words`, hasDefinedTerm: all.filter((p) => p.it.kind !== "origin").map((p) => ({ "@type": "DefinedTerm", name: p.h1, url: `${SITE}/words/${p.slug}` })) },
+    { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Home", item: `${SITE}/` }, { "@type": "ListItem", position: 2, name: "All words", item: `${SITE}/words` }] },
+  ];
+  return page({ title: `Greek roots and ideas in English: the full list | ${NAME}`, desc: `All ${greek} Greek roots, myths and ideas taught in Skepsis, from tele and photo to hubris and kudos, with meanings, examples and the original Greek.`, path: "/words", body, jsonld, keywords: "greek roots, greek words in english, etymology list, greek myths in english, learn greek roots" });
 }
 
 function aboutPage(all) {
@@ -194,8 +207,9 @@ export function buildSite(appMarkup, outDir) {
   w("about.html", aboutPage(all));
   w("404.html", notFound());
   const today = new Date().toISOString().slice(0, 10);
-  const urls = ["/", "/words", "/about", ...all.map((p) => `/words/${p.slug}`)];
-  w("sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${SITE}${u === "/" ? "/" : u}</loc><lastmod>${today}</lastmod></url>`).join("\n")}\n</urlset>\n`);
+  const sitemapEntry = (loc, priority, changefreq) => `  <url>\n    <loc>${SITE}${loc === "/" ? "/" : loc}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
+  const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapEntry("/", "1.0", "daily")}\n${sitemapEntry("/words", "0.9", "weekly")}\n${sitemapEntry("/about", "0.5", "monthly")}\n${all.map((p) => sitemapEntry(`/words/${p.slug}`, "0.8", "monthly")).join("\n")}\n</urlset>\n`;
+  w("sitemap.xml", sitemapXml);
   w("robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
   w("favicon.svg", `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#3446c9"/><text x="32" y="47" text-anchor="middle" font-family="Georgia,serif" font-size="42" fill="#fff">σ</text></svg>`);
   w("manifest.webmanifest", JSON.stringify({ name: `${NAME}: ${TAGLINE}`, short_name: NAME, description: DESC, start_url: "/", display: "standalone", background_color: "#f6f6f2", theme_color: "#3446c9", icons: [{ src: "/icon-192.png", sizes: "192x192", type: "image/png" }, { src: "/icon-512.png", sizes: "512x512", type: "image/png" }, { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" }] }, null, 2));
