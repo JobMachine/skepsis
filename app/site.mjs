@@ -140,6 +140,7 @@ function wordPage(p, all) {
       ? { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: [{ "@type": "Question", name: p.title, acceptedAnswer: { "@type": "Answer", text: `${it.greek ? "Yes" : "No"}. ${it.from}` } }] }
       : { "@context": "https://schema.org", "@type": "DefinedTerm", name: p.h1, alternateName: it.gr, description: it.kind === "root" ? `${it.m}. ${it.say}` : `${it.m}. ${it.story}`, inLanguage: "en", inDefinedTermSet: { "@type": "DefinedTermSet", name: "Skepsis: Greek roots and ideas in English", url: `${SITE}/words` }, url: `${SITE}/words/${p.slug}` },
     { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Home", item: `${SITE}/` }, { "@type": "ListItem", position: 2, name: "All words", item: `${SITE}/words` }, { "@type": "ListItem", position: 3, name: p.h1, item: `${SITE}/words/${p.slug}` }] },
+    { "@context": "https://schema.org", "@type": "WebPage", name: p.title, speakable: { "@type": "SpeakableSpecification", cssSelector: ["h1", ".mean", ".say", ".tx"] }, url: `${SITE}/words/${p.slug}` },
   ];
   return page({ title: `${p.title} | ${NAME}`, desc: p.desc, path: `/words/${p.slug}`, body, jsonld, type: "article", keywords });
 }
@@ -198,6 +199,82 @@ function appPage(appMarkup, all) {
 </head><body>${fallback}${app}${footer}</body></html>`;
 }
 
+function generateLlmsTxt() {
+  return `# Skepsis
+
+> Learn Greek roots, myths and ideas hiding in everyday English (tele, photo, hubris, kudos) in 3 minutes a day, with Texas examples.
+
+Skepsis is a free, open-source educational web app and Model Context Protocol (MCP) server that teaches Greek etymology and ancient concepts with Texas-flavored explanations.
+
+## Key Resources
+- [Full Knowledge Base](${SITE}/llms-full.txt): Complete plain-text dictionary of all 127 Greek roots, myths, and ideas.
+- [All Words & Roots](${SITE}/words): Browse all word pages and root families.
+- [About Skepsis](${SITE}/about): Methodology (spaced repetition, guess-first) and open-source mission.
+- [GitHub Repository](${REPO}): Source code (MIT), data schemas, and research notes.
+
+## MCP Server for AI Agents
+Any MCP-capable AI agent (Claude, Cursor, Codex) can tutor users with Skepsis:
+\`\`\`bash
+claude mcp add skepsis -- npx -y github:ionpetro/skepsis
+\`\`\`
+Available tools: start_lesson, answer, review, explain, break_down_word, root_of_the_day, progress.
+`;
+}
+
+function generateLlmsFullTxt(all) {
+  const lines = [
+    `# Skepsis: Full Etymology & Greek Roots Knowledge Base`,
+    ``,
+    `> Complete dictionary of Greek roots, myths, philosophical ideas, and etymological origins taught in Skepsis, with Texas examples.`,
+    ``,
+    `Website: ${SITE}`,
+    `Repository: ${REPO}`,
+    `License: MIT`,
+    ``,
+    `---`,
+    ``,
+  ];
+
+  for (const u of COURSE.units) {
+    lines.push(`## Unit: ${u.title}`);
+    lines.push(`${u.blurb}`);
+    lines.push(``);
+    const unitPages = all.filter((p) => p.unit.id === u.id);
+    for (const p of unitPages) {
+      const it = p.it;
+      if (it.kind === "root") {
+        lines.push(`### Root: ${it.root} (${it.gr}, transliterated: ${it.tr})`);
+        lines.push(`- Meaning: "${it.m}"`);
+        lines.push(`- Teach it: ${it.say}`);
+        lines.push(`- Texas take: ${it.hook}`);
+        lines.push(`- Examples:`);
+        for (const [w, d, parts] of it.ex) {
+          lines.push(`  * ${w}: ${d} (${parts.join(" + ")})`);
+        }
+        lines.push(`- URL: ${SITE}/words/${p.slug}`);
+      } else if (it.kind === "idea") {
+        lines.push(`### Concept: ${it.term} (${it.gr}, transliterated: ${it.tr}, literally: "${it.lit}")`);
+        lines.push(`- Meaning: ${it.m}`);
+        lines.push(`- Story: ${it.story}`);
+        lines.push(`- Texas take: ${it.tex}`);
+        lines.push(`- At work: ${it.work}`);
+        lines.push(`- Teach it: ${it.say}`);
+        lines.push(`- URL: ${SITE}/words/${p.slug}`);
+      } else {
+        lines.push(`### Is "${it.w}" Greek?`);
+        lines.push(`- Answer: ${it.greek ? "Yes, it is Greek" : "No, it is not Greek"}`);
+        lines.push(`- Origin & Etymology: ${it.from}`);
+        lines.push(`- URL: ${SITE}/words/${p.slug}`);
+      }
+      lines.push(``);
+    }
+    lines.push(`---`);
+    lines.push(``);
+  }
+
+  return lines.join("\n");
+}
+
 export function buildSite(appMarkup, outDir) {
   const all = pages();
   const w = (rel, s) => { const f = new URL(rel, outDir); mkdirSync(new URL(".", f), { recursive: true }); writeFileSync(f, s); };
@@ -206,11 +283,13 @@ export function buildSite(appMarkup, outDir) {
   for (const p of all) w(`words/${p.slug}.html`, wordPage(p, all));
   w("about.html", aboutPage(all));
   w("404.html", notFound());
+  w("llms.txt", generateLlmsTxt());
+  w("llms-full.txt", generateLlmsFullTxt(all));
   const today = new Date().toISOString().slice(0, 10);
   const sitemapEntry = (loc, priority, changefreq) => `  <url>\n    <loc>${SITE}${loc === "/" ? "/" : loc}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
-  const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapEntry("/", "1.0", "daily")}\n${sitemapEntry("/words", "0.9", "weekly")}\n${sitemapEntry("/about", "0.5", "monthly")}\n${all.map((p) => sitemapEntry(`/words/${p.slug}`, "0.8", "monthly")).join("\n")}\n</urlset>\n`;
+  const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapEntry("/", "1.0", "daily")}\n${sitemapEntry("/words", "0.9", "weekly")}\n${sitemapEntry("/about", "0.5", "monthly")}\n${sitemapEntry("/llms.txt", "0.7", "monthly")}\n${all.map((p) => sitemapEntry(`/words/${p.slug}`, "0.8", "monthly")).join("\n")}\n</urlset>\n`;
   w("sitemap.xml", sitemapXml);
-  w("robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
+  w("robots.txt", `User-agent: *\nAllow: /\n\n# AI Search Crawlers & Answer Engines (GEO)\nUser-agent: GPTBot\nAllow: /\nAllow: /llms.txt\nAllow: /llms-full.txt\n\nUser-agent: PerplexityBot\nAllow: /\nAllow: /llms.txt\nAllow: /llms-full.txt\n\nUser-agent: ClaudeBot\nAllow: /\nAllow: /llms.txt\nAllow: /llms-full.txt\n\nUser-agent: Google-Extended\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
   w("favicon.svg", `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#3446c9"/><text x="32" y="47" text-anchor="middle" font-family="Georgia,serif" font-size="42" fill="#fff">σ</text></svg>`);
   w("manifest.webmanifest", JSON.stringify({ name: `${NAME}: ${TAGLINE}`, short_name: NAME, description: DESC, start_url: "/", display: "standalone", background_color: "#f6f6f2", theme_color: "#3446c9", icons: [{ src: "/icon-192.png", sizes: "192x192", type: "image/png" }, { src: "/icon-512.png", sizes: "512x512", type: "image/png" }, { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" }] }, null, 2));
   w("vercel.json", JSON.stringify({
