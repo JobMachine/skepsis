@@ -459,3 +459,16 @@ p { margin: 0; }
   .intro .rootline .bigword { font-size: 36px; }
   .badges { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* GitHub star prompt on the lesson-finished screen */
+.starask { display: grid; gap: 10px; width: 100%; max-width: 420px; padding: 14px 16px; border-radius: 16px; background: var(--surface); border: 2px solid var(--line); text-align: left; animation: starask-in .35s ease-out both; }
+.starask-text { display: grid; gap: 2px; }
+.starask-text b { font-weight: 900; }
+.starask-text span { color: var(--muted); font-weight: 700; font-size: 14px; line-height: 1.35; }
+.starask-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.starask-btns .btn { flex: 1 1 auto; min-width: 9rem; justify-content: center; }
+@keyframes starask-in { from { opacity: 0; transform: translateY(6px); } }
+@media (prefers-reduced-motion: reduce) { .starask { animation: none; } }
+.starask-btns a.btn { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.starask-btns .btn svg { width: 18px; height: 18px; }
+.starask-btns .btn.ghost { font-size: 15px; }

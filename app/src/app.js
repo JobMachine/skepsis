@@ -20,6 +20,35 @@
   const REPO = "https://github.com/ionpetro/skepsis";
   /** GitHub link that asks people to star the repo. `where` says which button was clicked, for analytics. */
   const starLink = (cls, where, inner) => `<a class="${cls}" href="${REPO}" target="_blank" rel="noopener" data-star="${where}" aria-label="Star Skepsis on GitHub">${inner}</a>`;
+
+  // ---------- GitHub star prompt ----------
+  // Asked on the lesson-finished screen, never as a pop-up. The logs (Nov 2026) show nobody who
+  // finished a lesson had clicked GitHub, and most finishers stop after one lesson, so: ask after
+  // the first finished lesson; if "Not now", ask once more on a later day after a perfect lesson
+  // or the daily goal. Never more than twice, never again after a click.
+  const STAR_KEY = "skepsis-star-v1";
+  const starState = () => { try { return JSON.parse(localStorage.getItem(STAR_KEY) || "{}") || {}; } catch { return {}; } };
+  const saveStar = (st) => { try { localStorage.setItem(STAR_KEY, JSON.stringify(st)); } catch { /* storage blocked: we just may ask again */ } };
+  /** Counts this finished lesson and returns why to ask now ("first_lesson", "perfect", "daily_goal"), or null. */
+  function starMoment({ perfect, goalHit }) {
+    const st = starState();
+    st.lessons = (st.lessons || 0) + 1;
+    let why = null;
+    if (!st.clicked && (st.asks || 0) === 0) why = "first_lesson";
+    else if (!st.clicked && st.asks === 1 && st.lastAsk !== today() && (perfect || goalHit)) why = perfect ? "perfect" : "daily_goal";
+    if (why) { st.asks = (st.asks || 0) + 1; st.lastAsk = today(); }
+    saveStar(st);
+    return why ? { why, lessons: st.lessons, ask: st.asks } : null;
+  }
+  const starCard = () => `<div class="starask" id="starask" role="note">
+      <div class="starask-text"><b>Enjoying Skepsis?</b><span>It's free and open source. A star on GitHub helps other people find it.</span></div>
+      <div class="starask-btns"><a class="btn star-cta" id="star-go" href="${REPO}" target="_blank" rel="noopener">${I.github}<span>Star on GitHub</span></a><button class="btn ghost" type="button" id="star-later">Not now</button></div>
+    </div>`;
+  function bindStarCard(star) {
+    track("star_prompt_shown", { trigger: star.why, lessons: star.lessons, ask: star.ask });
+    $("#star-go").addEventListener("click", () => { const st = starState(); st.clicked = true; saveStar(st); track("star_prompt_clicked", { trigger: star.why, lessons: star.lessons, ask: star.ask }); track("github_star_clicked", { where: "star_prompt" }); $("#starask").remove(); });
+    $("#star-later").addEventListener("click", () => { track("star_prompt_dismissed", { trigger: star.why, lessons: star.lessons, ask: star.ask }); $("#starask").remove(); $("#next") && $("#next").focus(); });
+  }
   /** Bottom-of-screen note: open source, what we track and why, and a star prompt. The analytics line shows only where PostHog is loaded (the public website). */
   function siteNote() {
     const tracked = !!window.posthog;
@@ -852,6 +881,7 @@
     for (const b of fresh) track("badge_earned", { badge: b.id });
     const acc = run.scored ? Math.round((run.right / run.scored) * 100) : 100;
     const secs = Math.round((Date.now() - run.start) / 1000);
+    const star = starMoment({ perfect, goalHit: prevTodayXp < S.goal && (S.days[t] || 0) >= S.goal });
     sfx.done(); confetti();
     const streakLine = !wasActive && st.streakUp ? (st.usedFreeze ? `A freeze saved your streak. ${S.streak} days!` : S.streak > 1 ? `${S.streak}-day streak! ${before === 0 ? "" : "Keep it rolling."}` : "Day 1 of your streak. See you tomorrow.") : `Streak: ${S.streak} days.`;
     shell(`<div class="results">
@@ -864,10 +894,12 @@
       </div>
       <p style="font-weight:800">${esc(streakLine)}</p>
       ${fresh.map((b) => `<div class="newbadge">${wreath(b.name[0]).replace("<svg", '<svg width="40" height="40"')}<div>New laurel: ${esc(b.name)}<br><span class="muted">${esc(b.desc)}</span></div></div>`).join("")}
+      ${star ? starCard() : ""}
     </div>`, footerBtn("Continue", "gold"));
     $(".progress > i") && ($(".progress > i").style.width = "100%");
     $("#next").addEventListener("click", closeRun);
     $("#next").focus();
+    if (star) bindStarCard(star);
   }
 
   // ---------- rodeo ----------
