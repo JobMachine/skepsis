@@ -347,11 +347,13 @@
     const st = E.liveStreak(S, t);
     const active = S.lastDay === t;
     return `<header class="topbar">
+      <div class="topbar-main">
       <div class="wordmark">Skepsis<small class="greek">σκέψις</small></div>
       <div class="stats">
         <span class="stat flame ${active ? "" : "cold"}" title="${active ? "Streak is safe today" : "Do a lesson to keep your streak"}">${I.flame}<span>${st}</span></span>
         <span class="stat" title="Streak freezes" style="color:var(--brand)">${I.snow}<span>${S.freezes}</span></span>
         <span class="stat xp" title="Total XP">${I.coin}<span>${S.xp}</span></span>
+      </div>
       </div>
       ${starLink("gh", "topbar", `${I.github}<span class="gh-label">${I.star}<span class="gh-text">Star</span></span>`)}
     </header>`;
