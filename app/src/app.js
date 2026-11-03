@@ -32,7 +32,7 @@
   const sisterNote = () => `<p class="sister">More free, open-source apps like this: ${sisterLinks()}</p>`;
   const REPO = "https://github.com/ionpetro/skepsis";
   /** GitHub link that asks people to star the repo. `where` says which button was clicked, for analytics. */
-  const starLink = (cls, where, inner) => `<a class="${cls}" href="${REPO}" target="_blank" rel="noopener" data-star="${where}" aria-label="Star Skepsis on GitHub">${inner}</a>`;
+  const starLink = (cls, where, inner) => `<a class="${cls}" href="${REPO}" target="_blank" rel="noopener" data-star="${where}" aria-label="Star Skepsis on GitHub" title="Star Skepsis on GitHub">${inner}</a>`;
 
   // ---------- GitHub star prompt ----------
   // Asked on the lesson-finished screen, never as a pop-up. The logs (Nov 2026) show nobody who
@@ -353,7 +353,7 @@
         <span class="stat" title="Streak freezes" style="color:var(--brand)">${I.snow}<span>${S.freezes}</span></span>
         <span class="stat xp" title="Total XP">${I.coin}<span>${S.xp}</span></span>
       </div>
-      ${starLink("gh", "topbar", `${I.github}<span class="gh-label">${I.star}Star</span>`)}
+      ${starLink("gh", "topbar", `${I.github}<span class="gh-label">${I.star}<span class="gh-text">Star</span></span>`)}
     </header>`;
   }
   function tabbar() {
@@ -361,7 +361,7 @@
   }
 
   function render() {
-    if (!S.onboarded) { app().innerHTML = onboarding(); bindOnboarding(); return; }
+    if (!S.onboarded) { app().innerHTML = topbar() + onboarding(); bindOnboarding(); return; }
     const body = { learn: learnView, agora: agoraView, board: boardView, teach: teachView, me: meView }[ui.tab]();
     app().innerHTML = topbar() + `<main class="view">${body}${siteNote()}</main>` + tabbar();
     bindCommon();

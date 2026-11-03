@@ -112,7 +112,8 @@ button { font: inherit; color: inherit; }
 .gh-label { display: inline-flex; align-items: center; gap: 3px; }
 .gh-label svg { width: 14px; height: 14px; color: var(--gold-deep); }
 @media (max-width: 480px) { .wordmark small { display: none; } }
-@media (max-width: 430px) { .gh-label { display: none; } .gh { padding: 4px 8px; } }
+.gh-text { display: inline; }
+@media (max-width: 430px) { .gh-text { display: none; } .gh { padding: 4px 8px; } }
 @media (max-width: 380px) { .stats { gap: 4px; } .stat { padding: 4px 8px; } }
 
 /* Bottom note: open source, analytics disclosure, star prompt */
