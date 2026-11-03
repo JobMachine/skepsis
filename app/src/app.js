@@ -17,6 +17,17 @@
     try { if (window.posthog && typeof window.posthog.capture === "function") window.posthog.capture(event, props); } catch { /* analytics must never break the app */ }
   }
 
+  // ---------- sister apps ----------
+  /** The family of free, open-source learning apps. Keep this list the same in Skepsis, Carpe, Gnothi and Objection (app.js and site.mjs). */
+  const FAMILY = [
+    { id: "skepsis", name: "Skepsis", url: "https://skepsis-greek.vercel.app", repo: "https://github.com/ionpetro/skepsis", en: "the Greek hiding in everyday English", el: "οι ελληνικές ρίζες που κρύβονται στα αγγλικά" },
+    { id: "carpe", name: "Carpe", url: "https://carpe-latin.vercel.app", repo: "https://github.com/ionpetro/carpe", en: "Latin for Greece's national exams", el: "Λατινικά για τις Πανελλαδικές" },
+    { id: "gnothi", name: "Gnothi", url: "https://gnothi-greek.vercel.app", repo: "https://github.com/ionpetro/gnothi", en: "Ancient Greek for Greece's national exams", el: "Αρχαία Ελληνικά για τις Πανελλαδικές" },
+    { id: "objection", name: "Objection", url: "https://objection-bar.vercel.app", repo: "https://github.com/ionpetro/objection", en: "prep for the US bar exam", el: "προετοιμασία για τις εξετάσεις δικηγόρων των ΗΠΑ" },
+  ];
+  /** Links to the other apps in the family, tagged so each app's analytics shows where visitors came from. */
+  const sisterLinks = () => FAMILY.filter((a) => a.id !== "skepsis").map((a) => `<a href="${a.url}/?utm_source=skepsis&utm_medium=sister_link" target="_blank" rel="noopener" data-sister="${a.id}">${a.name}</a> (${a.en})`).join(" · ");
+  const sisterNote = () => `<p class="sister">More free, open-source apps like this: ${sisterLinks()}</p>`;
   const REPO = "https://github.com/ionpetro/skepsis";
   /** GitHub link that asks people to star the repo. `where` says which button was clicked, for analytics. */
   const starLink = (cls, where, inner) => `<a class="${cls}" href="${REPO}" target="_blank" rel="noopener" data-star="${where}" aria-label="Star Skepsis on GitHub">${inner}</a>`;
@@ -53,7 +64,7 @@
   function siteNote() {
     const tracked = !!window.posthog;
     return `<footer class="sitenote">
-      <p class="sister">Sister app: <a href="https://carpe-latin.vercel.app/?utm_source=skepsis&utm_medium=sister_link" target="_blank" rel="noopener">Carpe</a>, playful Latin for Greece's national exams.</p>
+      ${sisterNote()}
       <p><b>Skepsis is free and always will be. The code is open (MIT).</b>${tracked ? " The only thing we do is measure how it's used with PostHog, so we can make it better. No account, no ads, and session recordings hide anything you type." : " No account, no ads."}</p>
       ${starLink("btn ghost star-cta", "footer", `${I.github}<span>Star it on GitHub</span>`)}
       <p class="sitenote-sub">A star helps other people find it.</p>
@@ -451,6 +462,7 @@
   }
   function bindStars(root) {
     root.querySelectorAll("[data-star]").forEach((a) => a.addEventListener("click", () => track("github_star_clicked", { where: a.dataset.star })));
+    root.querySelectorAll("[data-sister]").forEach((a) => a.addEventListener("click", () => track("sister_app_clicked", { to: a.dataset.sister })));
   }
   function bindOnboarding() {
     bindStars(app());

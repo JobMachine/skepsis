@@ -2,11 +2,22 @@
 
 **Y'all already speak Greek.** Skepsis is a free, open-source game that teaches the Greek roots, myths and big ideas hiding in everyday English, in 3-minute lessons. Every word comes with a Texas example.
 
-**Play:** https://skepsis-greek.vercel.app · **Every word:** https://skepsis-greek.vercel.app/words · **Learn from your AI agent:** [MCP server](mcp/README.md)
+**Play:** https://skepsis-greek.vercel.app · **Every word:** https://skepsis-greek.vercel.app/words · **Learn from your AI agent:** [MCP server](mcp/README.md) · **iOS app:** [mobile/](mobile/README.md)
 
 ![Skepsis: Y'all already speak Greek](app/public/og.png)
 
 *Skepsis* (σκέψις) is Greek for "looking closely". It's where *skeptic* comes from.
+
+## Open source, and the family
+
+Skepsis is free and open source (MIT). **If it helps you, please [star the repo](https://github.com/ionpetro/skepsis)**: a star helps other people find it. Corrections and pull requests are welcome.
+
+Skepsis is one of four free, open-source learning apps built the same way (short daily lessons, spaced review, no account):
+
+- **Skepsis** (this one): the Greek hiding in everyday English. [Play](https://skepsis-greek.vercel.app) · [GitHub](https://github.com/ionpetro/skepsis)
+- **Carpe**: Latin for Greece's national exams. [Play](https://carpe-latin.vercel.app) · [GitHub](https://github.com/ionpetro/carpe)
+- **Gnothi**: Ancient Greek for Greece's national exams. [Play](https://gnothi-greek.vercel.app) · [GitHub](https://github.com/ionpetro/gnothi)
+- **Objection**: prep for the US bar exam (MBE). [Play](https://objection-bar.vercel.app) · [GitHub](https://github.com/ionpetro/objection)
 
 ## What's inside
 
@@ -29,6 +40,7 @@
   - **Huddle** turns a unit into big slides for a standup.
 - **Optional team board:** a weekly leaderboard with a shared team goal, when the app is hosted as a Claude Artifact.
 - **MCP server:** Claude, Cursor or any MCP agent can tutor you with the same lessons and spaced review.
+- **iOS app** ([mobile/](mobile/README.md)): native lessons, Rodeo, daily quests, drachmas and hats for Homer, local reminders and lyre sounds. No account; everything stays on your phone.
 
 ## How it teaches
 
@@ -65,6 +77,7 @@ open app/vercel/index.html
 | `app/src/app.js`, `style.css`, `shell.html` | The app (plain JS, no framework, no build step beyond inlining) |
 | `app/site.mjs` | The website: the app plus a crawlable page for every word, sitemap, share tags |
 | `mcp/` | The MCP server |
+| `mobile/` | The iOS app (Expo): same lessons, plus quests, drachmas, a shop, reminders. Local-first: progress never leaves the phone |
 | `video/` | The 5-second launch video (Remotion) |
 
 ## Add a word
