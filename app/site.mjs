@@ -10,7 +10,7 @@ const { COURSE } = require("./src/content.js");
 export const SITE = "https://skepsis-greek.vercel.app";
 export const REPO = "https://github.com/ionpetro/skepsis";
 
-// The family of free, open-source learning apps. Keep this list the same in Skepsis, Carpe, Gnothi, Objection, Agora and Oikos (app.js and site.mjs).
+// The family of free, open-source learning apps. Keep this list the same in Skepsis, Carpe, Gnothi, Objection, Agora, Oikos and Guanxi (app.js and site.mjs).
 const FAMILY = [
   { id: "skepsis", name: "Skepsis", url: "https://skepsis-greek.vercel.app", repo: "https://github.com/ionpetro/skepsis", en: "the Greek hiding in everyday English", el: "οι ελληνικές ρίζες που κρύβονται στα αγγλικά" },
   { id: "carpe", name: "Carpe", url: "https://carpe-latin.vercel.app", repo: "https://github.com/ionpetro/carpe", en: "Latin for Greece's national exams", el: "Λατινικά για τις Πανελλαδικές" },
@@ -18,6 +18,7 @@ const FAMILY = [
   { id: "objection", name: "Objection", url: "https://objection-bar.vercel.app", repo: "https://github.com/ionpetro/objection", en: "prep for the US bar exam", el: "προετοιμασία για τις εξετάσεις δικηγόρων των ΗΠΑ" },
   { id: "agora", name: "Agora", url: "https://agora-sales-xi.vercel.app", repo: "https://github.com/ionpetro/agora", en: "sales and negotiation, with ethics", el: "πωλήσεις και διαπραγμάτευση, με ηθική" },
   { id: "oikos", name: "Oikos", url: "https://oikos-azure-five.vercel.app", repo: "https://github.com/ionpetro/oikos", en: "economics and incentives", el: "οικονομικά και κίνητρα" },
+  { id: "guanxi", name: "Guanxi", url: "https://guanxi-mandarin.vercel.app", repo: "https://github.com/ionpetro/guanxi", en: "Mandarin for going back to Shenzhen", el: "Κινέζικα για την επιστροφή στη Σενζέν" },
 ];
 const SISTERS = FAMILY.filter((a) => a.id !== "skepsis");
 const sisterHref = (a) => `${a.url}/?utm_source=skepsis&amp;utm_medium=sister_link`;
@@ -166,7 +167,7 @@ function aboutPage(all) {
     <pre class="card" style="overflow-x:auto;font-size:14px">claude mcp add skepsis -- npx -y github:ionpetro/skepsis</pre>
     <h2>Open source</h2><p>Code and content are MIT-licensed on <a href="${REPO}">GitHub</a>. Corrections and new words are welcome.</p>
     <h2>Free, open, and what we measure</h2><p>${NAME} is free and always will be. The code is open under the MIT license: <a href="${REPO}">${REPO.replace("https://", "")}</a>. No account, no sign-up, no ads. Your progress stays in your browser. The only thing we do is measure how it's used with <a href="https://posthog.com">PostHog</a> (visits, lesson results, which words are hard, and session recordings with anything you type hidden), so we can make it better.</p>
-    <h2>The family</h2><p>${NAME} is one of six free, open-source learning apps, each one a short daily game:</p><ul>${FAMILY.map((a) => `<li>${a.id === "skepsis" ? `<b>${a.name}</b>` : `<a href="${sisterHref(a)}">${a.name}</a>`}: ${a.en} (<a href="${a.repo}">code</a>)</li>`).join("")}</ul><p>If one helps you, a star on GitHub helps other people find it.</p>
+    <h2>The family</h2><p>${NAME} is one of seven free, open-source learning apps, each one a short daily game:</p><ul>${FAMILY.map((a) => `<li>${a.id === "skepsis" ? `<b>${a.name}</b>` : `<a href="${sisterHref(a)}">${a.name}</a>`}: ${a.en} (<a href="${a.repo}">code</a>)</li>`).join("")}</ul><p>If one helps you, a star on GitHub helps other people find it.</p>
     <a class="cta" href="/">Start learning, free</a>`;
   return page({ title: `About ${NAME}: Greek roots in 3 minutes a day`, desc: DESC, path: "/about", body, jsonld: [{ "@context": "https://schema.org", "@type": "AboutPage", name: `About ${NAME}`, url: `${SITE}/about` }] });
 }

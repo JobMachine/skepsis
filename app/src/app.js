@@ -18,7 +18,7 @@
   }
 
   // ---------- sister apps ----------
-  /** The family of free, open-source learning apps. Keep this list the same in Skepsis, Carpe, Gnothi, Objection, Agora and Oikos (app.js and site.mjs). */
+  /** The family of free, open-source learning apps. Keep this list the same in Skepsis, Carpe, Gnothi, Objection, Agora, Oikos and Guanxi (app.js and site.mjs). */
   const FAMILY = [
     { id: "skepsis", name: "Skepsis", url: "https://skepsis-greek.vercel.app", repo: "https://github.com/ionpetro/skepsis", en: "the Greek hiding in everyday English", el: "οι ελληνικές ρίζες που κρύβονται στα αγγλικά" },
     { id: "carpe", name: "Carpe", url: "https://carpe-latin.vercel.app", repo: "https://github.com/ionpetro/carpe", en: "Latin for Greece's national exams", el: "Λατινικά για τις Πανελλαδικές" },
@@ -26,9 +26,18 @@
     { id: "objection", name: "Objection", url: "https://objection-bar.vercel.app", repo: "https://github.com/ionpetro/objection", en: "prep for the US bar exam", el: "προετοιμασία για τις εξετάσεις δικηγόρων των ΗΠΑ" },
     { id: "agora", name: "Agora", url: "https://agora-sales-xi.vercel.app", repo: "https://github.com/ionpetro/agora", en: "sales and negotiation, with ethics", el: "πωλήσεις και διαπραγμάτευση, με ηθική" },
     { id: "oikos", name: "Oikos", url: "https://oikos-azure-five.vercel.app", repo: "https://github.com/ionpetro/oikos", en: "economics and incentives", el: "οικονομικά και κίνητρα" },
+    { id: "guanxi", name: "Guanxi", url: "https://guanxi-mandarin.vercel.app", repo: "https://github.com/ionpetro/guanxi", en: "Mandarin for going back to Shenzhen", el: "Κινέζικα για την επιστροφή στη Σενζέν" },
   ];
   /** Links to the other apps in the family, tagged so each app's analytics shows where visitors came from. */
   const sisterLinks = () => FAMILY.filter((a) => a.id !== "skepsis").map((a) => `<a href="${a.url}/?utm_source=skepsis&utm_medium=sister_link" target="_blank" rel="noopener" data-sister="${a.id}">${a.name}</a> (${a.en})`).join(" · ");
+  /** "Pick your focus": every app in the family, Skepsis selected. Picking another one opens it. Same look as the daily-goal picker. Shown on the welcome screen (below the start button) and the Learn tab. */
+  const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+  const focusPicker = () => `<section class="card focus" aria-labelledby="focus-h">
+      <div><div class="eyebrow">The family</div><h3 id="focus-h">Pick your focus</h3></div>
+      <div class="goalopts apps">${FAMILY.map((a) => a.id === "skepsis"
+        ? `<span class="goalopt" aria-current="true" aria-pressed="true"><b>${a.name}</b><small>${cap(a.en)}</small><em>You're here</em></span>`
+        : `<a class="goalopt" href="${a.url}/?utm_source=skepsis&utm_medium=focus_picker" data-sister="${a.id}"><b>${a.name}</b><small>${cap(a.en)}</small></a>`).join("")}</div>
+    </section>`;
   const sisterNote = () => `<p class="sister">More free, open-source apps like this: ${sisterLinks()}</p>`;
   const REPO = "https://github.com/ionpetro/skepsis";
   /** GitHub link that asks people to star the repo. `where` says which button was clicked, for analytics. */
@@ -63,10 +72,10 @@
     $("#star-later").addEventListener("click", () => { track("star_prompt_dismissed", { trigger: star.why, lessons: star.lessons, ask: star.ask }); $("#starask").remove(); $("#next") && $("#next").focus(); });
   }
   /** Bottom-of-screen note: open source, what we track and why, and a star prompt. The analytics line shows only where PostHog is loaded (the public website). */
-  function siteNote() {
+  function siteNote(sisters = true) {
     const tracked = !!window.posthog;
     return `<footer class="sitenote">
-      ${sisterNote()}
+      ${sisters ? sisterNote() : ""}
       <p><b>Skepsis is free and always will be. The code is open (MIT).</b>${tracked ? " The only thing we do is measure how it's used with PostHog, so we can make it better. No account, no ads, and session recordings hide anything you type." : " No account, no ads."}</p>
       ${starLink("btn ghost star-cta", "footer", `${I.github}<span>Star it on GitHub</span>`)}
       <p class="sitenote-sub">A star helps other people find it.</p>
@@ -365,7 +374,7 @@
   function render() {
     if (!S.onboarded) { app().innerHTML = topbar() + onboarding(); bindOnboarding(); return; }
     const body = { learn: learnView, agora: agoraView, board: boardView, teach: teachView, me: meView }[ui.tab]();
-    app().innerHTML = topbar() + `<main class="view">${body}${siteNote()}</main>` + tabbar();
+    app().innerHTML = topbar() + `<main class="view">${body}${siteNote(ui.tab !== "learn")}</main>` + tabbar();
     bindCommon();
     if (ui.tab === "agora") fillNames();
   }
@@ -461,7 +470,8 @@
       </div>
       <button class="btn block" id="ob-go">Saddle up</button>
       <p class="muted" style="text-align:center;font-size:13px;font-weight:700">Weekends never break your streak. No hearts, no penalties.</p>
-      ${siteNote()}
+      ${focusPicker()}
+      ${siteNote(false)}
     </div>`;
   }
   function bindStars(root) {
@@ -504,6 +514,7 @@
         <div style="flex:1;min-width:0"><div class="eyebrow">Daily goal</div><h3 class="tnum">${todayXp} / ${S.goal} XP</h3><p class="muted" style="font-weight:700;font-size:14px">${E.isWeekend(t) ? "It's the weekend: optional, streak is safe." : "Weekends never break your streak."}</p></div>
         ${next ? `<button class="btn" data-start="${next.id}">${Object.keys(S.done).length ? "Continue" : "Start"}</button>` : ""}
       </section>
+      ${focusPicker()}
       <section class="quick">
         <button class="tile" data-act="practice" ${learned < 3 ? "disabled" : ""}><span style="color:var(--olive)">${I.redo}</span><b>Practice</b><span>${learned < 3 ? "Unlocks after lesson 1" : due ? `${due} due for review` : "Strengthen weak spots"}</span></button>
         <button class="tile" data-act="rodeo"><span style="color:var(--flame)">${I.shoe}</span><b>Rodeo</b><span>8 seconds a question · best ${S.rodeoBest}</span></button>
