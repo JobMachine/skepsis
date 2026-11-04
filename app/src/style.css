@@ -433,15 +433,27 @@ p { margin: 0; }
 .goalopt { padding: 12px 6px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); cursor: pointer; font-weight: 800; text-align: center; line-height: 1.2; }
 .goalopt small { display: block; color: var(--muted); font-size: 12px; }
 .goalopt[aria-pressed="true"] { border-color: var(--brand); background: var(--brand-soft); }
-/* "Pick your focus": the family of apps, same look as the goal picker */
+/* "Pick your focus": the family of apps, same shape as the goal picker, each tile in its app's own color */
 .focus { display: flex; flex-direction: column; gap: 12px; }
 .goalopts.apps { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-.goalopts.apps .goalopt { display: flex; flex-direction: column; gap: 2px; padding: 12px; text-align: left; color: var(--ink); text-decoration: none; box-shadow: 0 3px 0 var(--line); }
-a.goalopt:hover { border-color: var(--brand); }
-a.goalopt:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--line); }
+.goalopts.apps .goalopt {
+  --app: var(--brand);
+  display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px; text-align: left; color: var(--ink); text-decoration: none;
+  border-color: color-mix(in srgb, var(--app) 30%, var(--line));
+  background: color-mix(in srgb, var(--app) 7%, var(--surface));
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--app) 45%, var(--line));
+}
+.app-icon { flex: none; width: 36px; height: 36px; }
+.app-icon svg { width: 100%; height: 100%; display: block; }
+.app-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .goalopts.apps .goalopt b { font-size: 16px; font-weight: 900; }
-.goalopts.apps .goalopt[aria-pressed="true"] { cursor: default; box-shadow: 0 3px 0 var(--brand); }
+a.goalopt:hover { border-color: var(--app); }
+a.goalopt:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--app); }
+.goalopts.apps .goalopt[aria-pressed="true"] { cursor: default; border-color: var(--app); background: var(--brand-soft); box-shadow: 0 3px 0 var(--app); }
 .goalopts.apps .goalopt em { font-style: normal; font-size: 12px; font-weight: 900; color: var(--brand); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+/* the darkest brand colors (navy) need a lift to show on the dark theme */
+:root[data-theme="dark"] .goalopts.apps .goalopt { border-color: color-mix(in srgb, var(--app) 45%, #8a93c9); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .goalopts.apps .goalopt { border-color: color-mix(in srgb, var(--app) 45%, #8a93c9); } }
 
 /* ---------- onboarding ---------- */
 .onboard { min-height: 100%; display: flex; flex-direction: column; gap: 20px; justify-content: center; padding-block: 32px; }
