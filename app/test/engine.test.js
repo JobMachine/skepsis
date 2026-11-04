@@ -70,6 +70,17 @@ test("every lesson and roundup builds valid questions across many seeds", () => 
   }
 });
 
+test("the short first lesson skips the guess and practice, keeps intros, checks and the match", () => {
+  const s = E.freshState();
+  for (let seed = 1; seed <= 30; seed++) {
+    const steps = E.buildLesson(IX, s, "u1l1", seed, { short: true });
+    assert.ok(steps.length <= 8, `short lesson has ${steps.length} steps`);
+    assert.ok(!steps.some((q) => q.guess), "no guess question");
+    assert.equal(steps[0].type, "intro", "starts by teaching");
+    steps.forEach((q, i) => checkQ(q, `short#${i} seed ${seed}`));
+  }
+});
+
 test("practice and rodeo work for a learner with progress", () => {
   const s = E.freshState();
   for (const it of all.slice(0, 20)) E.learn(s, it.id, "2026-10-01");

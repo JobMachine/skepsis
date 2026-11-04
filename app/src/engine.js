@@ -314,8 +314,10 @@ const Engine = (() => {
   /**
    * A lesson: guess first (pretest) -> each item's intro + quick check -> practice with
    * at least two unseen-word decodes -> a match round -> one or two interleaved review items.
+   * `short` (a brand-new player's first lesson): no guess, no practice round, no review: just
+   * each item's intro + quick check, then the match round. About 7 screens instead of 13.
    */
-  function buildLesson(ix, s, lessonId, seed) {
+  function buildLesson(ix, s, lessonId, seed, { short = false } = {}) {
     const r = rng(seed);
     const lesson = ix.lessons.find((l) => l.id === lessonId);
     const its = lesson.items.map((x) => ix.items.get(x.id));
@@ -328,11 +330,15 @@ const Engine = (() => {
     }
 
     const firstRoot = its.find((x) => x.kind === "root");
-    if (firstRoot) steps.push(qDecode(ix, firstRoot, 2, r, { guess: true }));
+    if (firstRoot && !short) steps.push(qDecode(ix, firstRoot, 2, r, { guess: true }));
 
     for (const it of its) {
       steps.push({ type: "intro", itemId: it.id });
       steps.push(it.kind === "root" ? qMeaning(ix, it, r) : qMeaning(ix, it, r, "New idea"));
+    }
+    if (short) {
+      if (its.length >= 3) steps.push(qMatch(ix, its, r));
+      return steps;
     }
 
     const practice = [];

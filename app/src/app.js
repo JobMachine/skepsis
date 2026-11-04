@@ -696,17 +696,19 @@
   function startRun(mode, node = null) {
     const sd = seed();
     let steps;
-    if (mode === "lesson") steps = E.buildLesson(IX, S, node.id, sd);
+    // A brand-new player's first lesson is the short one: most first-timers quit early (Nov 2026 data).
+    const short = mode === "lesson" && !Object.keys(S.done).length;
+    if (mode === "lesson") steps = E.buildLesson(IX, S, node.id, sd, { short });
     else if (mode === "roundup") steps = E.buildRoundup(IX, S, node.unitId, sd);
     else steps = E.buildPractice(IX, S, sd);
     if (!steps.length) { toast("Nothing to practice yet"); return; }
-    run = { mode, node, steps, i: 0, misses: 0, combo: 0, maxCombo: 0, right: 0, scored: 0, requeued: new Set(), answered: false, start: Date.now() };
+    run = { mode, node, short: mode === "lesson" && short, steps, i: 0, misses: 0, combo: 0, maxCombo: 0, right: 0, scored: 0, requeued: new Set(), answered: false, start: Date.now() };
     track("lesson_started", runProps());
     ui.overlay = "lesson";
     drawStep();
   }
   function runProps() {
-    return run ? { mode: run.mode, lesson_id: run.node ? run.node.id : null, unit_id: run.node ? run.node.unitId : null } : {};
+    return run ? { mode: run.mode, lesson_id: run.node ? run.node.id : null, unit_id: run.node ? run.node.unitId : null, short_lesson: !!run.short } : {};
   }
   /** What the player is looking at right now, for step-level events. */
   function stepProps(q) {
