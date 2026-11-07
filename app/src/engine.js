@@ -106,7 +106,7 @@ const Engine = (() => {
         out.reset = true;
       }
     }
-    out.streakUp = !out.reset;
+    out.streakUp = true;
     s.lastDay = today;
     if (s.streak > s.bestStreak) s.bestStreak = s.streak;
     if (s.streak > 0 && s.streak % 7 === 0 && s.freezes < MAX_FREEZES) s.freezes += 1;

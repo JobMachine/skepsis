@@ -193,7 +193,7 @@ test("streak milestones award freezes capped at MAX_FREEZES and preserve bestStr
 
   // Clock skew: backward date resets streak to 1, preserves bestStreak
   const skew = E.touchStreak(s, "2026-10-01");
-  assert.equal(skew.streakUp, false);
+  assert.equal(skew.streakUp, true);
   assert.equal(skew.reset, true);
   assert.equal(s.streak, 1);
   assert.equal(s.bestStreak, 21);

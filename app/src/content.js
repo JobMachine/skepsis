@@ -572,7 +572,7 @@ const COURSE = {
               ex: [
                 ["autonomy", "the right to make your own rules", ["auto", "nomy"]],
                 ["astronomy", "the science of stars and space", ["astro", "nomy"]],
-                ["gastronomy", "the art and law of good food", ["gastro", "nomy"]],
+                ["economy", "managing money; first, a household", ["eco", "nomy"]],
               ],
             },
             {
@@ -722,12 +722,12 @@ const COURSE = {
               q: { prompt: "Why would a sports brand pick the name Nike?", a: "It's the name of the goddess of victory", w: ["It means 'fast feet' in Greek", "It was the founder's last name", "It means 'running shoe'"] },
             },
             {
-              id: "achilles", kind: "idea", term: "Achilles' heel", gr: "Ἀχιλλεύς", tr: "Achilleus", lit: "Achilles",
+              id: "achilles", kind: "idea", term: "Achilles' heel", gr: "Ἀχιλλεύς", tr: "Achilleus", lit: "Achilles' heel",
               m: "A single weak spot in someone strong",
               story: "In later tellings, Achilles' mother dipped him in the river Styx to make him unbeatable, holding him by the heel, so that spot stayed weak. He died at Troy when an arrow hit it. Your Achilles tendon is named for him.",
               tex: "A great quarterback with no offensive line: that line is his Achilles' heel.",
               work: "Ask: 'What is our Achilles' heel?' It finds the one weak point in a strong plan.",
-              say: "An Achilles' heel is one weak spot in someone strong. The hero was invincible except his heel.",
+              say: "An Achilles' heel is one weak spot in someone strong. Achilles was invincible except his heel.",
               q: { prompt: "Our product is great, but users stop opening it after week two. That's our…", a: "Achilles' heel: the one weak spot", w: ["Trojan horse: a hidden trick", "Odyssey: a long journey", "Nemesis: a fated enemy"] },
             },
             {
@@ -778,7 +778,7 @@ const COURSE = {
               story: "Narcissus was so beautiful that he fell in love with his own reflection in a pool. He stared until he wasted away, and a flower, the narcissus, grew where he had been.",
               tex: "The guy who checks his truck's reflection at every Buc-ee's pump.",
               work: "Watch for narcissistic metrics: numbers that make us look good but don't help customers.",
-              say: "A narcissist loves their own image, like the Greek youth who fell for his reflection in a pool.",
+              say: "A narcissist loves their own image, like Narcissus, who fell for his reflection in a pool.",
               q: { prompt: "A 'vanity metric' that only makes the team look good is a bit…", a: "narcissistic: in love with its own reflection", w: ["herculean: very hard", "stoic: calm under stress", "chronic: long-lasting"] },
             },
             {
@@ -957,7 +957,7 @@ const COURSE = {
               story: "Zeno taught in Athens at the Stoa Poikilē, the 'Painted Porch', around 300 BC. His followers were named after the porch. They trained themselves to stay calm and act well whatever happened.",
               tex: "A rancher watching hail flatten the crop, then saying 'Well, let's fix the fence.' Stoic.",
               work: "A customer churns. Be stoic: feel it, learn the lesson, call the next one.",
-              say: "A stoic was named after a porch in Athens where Zeno taught. They practiced staying calm and acting well.",
+              say: "Stoics were named after a porch in Athens where Zeno taught. They practiced staying calm and acting well.",
               q: { prompt: "The Stoics got their name from…", a: "a painted porch in Athens where they met", w: ["a Roman emperor named Stoicus", "the Greek word for 'stone-faced'", "a mountain in Sparta"] },
             },
             {
@@ -966,7 +966,7 @@ const COURSE = {
               story: "Epictetus (the label 'dichotomy of control' is modern) was born a slave and became a famous Stoic teacher. His handbook opens: some things are up to us (our judgments, choices, effort) and some are not (weather, other people, the past). Focus only on the first.",
               tex: "You can't control a Texas summer. You can control whether you water the yard at 6 am.",
               work: "We can't control whether a customer replies. We control how good today's outreach is.",
-              say: "The dichotomy of control: some things are up to us, some aren't. Spend your energy only on the first kind.",
+              say: "Epictetus: some things are up to us, some aren't. Spend your energy only on the first kind.",
               q: { prompt: "Which one is 'up to us', in Epictetus' sense?", a: "How carefully we prepare for an interview", w: ["Whether the hiring manager likes us", "The job market this year", "What the other candidates do"] },
             },
             {
@@ -1068,12 +1068,12 @@ const COURSE = {
               q: { prompt: "A stratēgos in Athens was…", a: "an elected army general", w: ["a chess player", "a merchant", "a priest"] },
             },
             {
-              id: "techne", kind: "idea", term: "technē", gr: "τέχνη", tr: "technē", lit: "craft, art, skill",
+              id: "techne", kind: "idea", term: "technology", gr: "τέχνη", tr: "technē", lit: "craft, art, skill",
               m: "Using skill and tools to make things",
               story: "Technē meant craft: the skill of a carpenter, doctor or sculptor. Technology is 'the study of craft'. Greeks didn't split art from engineering. Both were technē.",
               tex: "A saddle maker in Fort Worth practices technē. So does an engineer at Dell in Round Rock.",
               work: "Software is the tool. The technē is the craft of getting the customer a result.",
-              say: "Technē means craft or skill. To Greeks, art and engineering were the same idea.",
+              say: "Technology comes from technē: craft or skill. To Greeks, art and engineering were the same idea.",
               q: { prompt: "Technē meant…", a: "craft or skill", w: ["machine", "electricity", "speed"] },
             },
             {
