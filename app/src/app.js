@@ -399,7 +399,7 @@
   // made from a hash of their anonymous PostHog id; raw ids are never published. Your own row uses
   // your live XP from this browser.
   const BOARD_URL = "https://skepsis-carpe-boards.vercel.app/skepsis.json";
-  const board = { data: null, loading: false, failed: false, me: null };
+  const board = { data: null, loading: false, failed: false, me: null, at: 0 };
   const NAME_A = ["Swift", "Bold", "Clever", "Mighty", "Wise", "Brave", "Sunny", "Lucky", "Quick", "Noble", "Steady", "Witty", "Daring", "Gentle", "Fierce", "Bright"];
   const NAME_B = ["Owl", "Pegasus", "Centaur", "Griffin", "Sphinx", "Phoenix", "Cyclops", "Satyr", "Minotaur", "Siren", "Hydra", "Titan", "Nymph", "Muse", "Oracle", "Armadillo"];
   const nickname = (h) => `${NAME_A[parseInt(h.slice(0, 4), 16) % NAME_A.length]} ${NAME_B[parseInt(h.slice(4, 8), 16) % NAME_B.length]}`;
@@ -415,9 +415,11 @@
     if (board.loading) return;
     board.loading = true; board.failed = false;
     try {
-      const res = await fetch(BOARD_URL, { cache: "no-store" });
+      // The query string skips any CDN or browser copy, so a fresh publish shows up right away.
+      const res = await fetch(`${BOARD_URL}?t=${Date.now()}`, { cache: "no-store" });
       if (!res.ok) throw new Error(String(res.status));
       board.data = await res.json();
+      board.at = Date.now();
     } catch { board.failed = true; }
     try {
       const id = window.posthog && typeof window.posthog.get_distinct_id === "function" ? window.posthog.get_distinct_id() : null;
@@ -431,6 +433,8 @@
   }
   function boardView() {
     if (!board.data && !board.failed) { loadBoard(); return `<section class="card empty">${mascot()}<p>Loading the board…</p></section>`; }
+    // Opening the tab again after a few minutes fetches the latest board in the background.
+    if (board.data && Date.now() - board.at > 5 * 60000) loadBoard();
     if (!board.data) return `<section class="card empty">${mascot("sad")}<p>The board won't load right now. Try again later.</p></section>`;
     const t = today(), d = board.data;
     // Only trust an all-time file; an older weekly file would mix up the numbers.
