@@ -393,8 +393,8 @@
     if (ui.tab === "agora") fillNames();
   }
 
-  // ---------- weekly board (public website) ----------
-  // No database: every few hours a job adds up each player's XP for the week from the anonymous
+  // ---------- all-time board (public website) ----------
+  // No database: every few hours a job adds up each player's XP since launch from the anonymous
   // PostHog events we already send, and publishes it as a small file. Players appear under a name
   // made from a hash of their anonymous PostHog id; raw ids are never published. Your own row uses
   // your live XP from this browser.
@@ -430,15 +430,16 @@
     if (ui.tab === "board" && !ui.overlay) render();
   }
   function boardView() {
-    if (!board.data && !board.failed) { loadBoard(); return `<section class="card empty">${mascot()}<p>Loading this week's board…</p></section>`; }
+    if (!board.data && !board.failed) { loadBoard(); return `<section class="card empty">${mascot()}<p>Loading the board…</p></section>`; }
     if (!board.data) return `<section class="card empty">${mascot("sad")}<p>The board won't load right now. Try again later.</p></section>`;
-    const t = today(), wk = E.weekKey(t), d = board.data;
-    const sameWeek = d.week === wk;
+    const t = today(), d = board.data;
+    // Only trust an all-time file; an older weekly file would mix up the numbers.
+    const allTime = d.period === "all";
     const meH = board.me || localBoardId();
-    const myXp = E.weekXp(S, t);
-    const others = sameWeek ? d.top.filter((p) => p.h !== meH) : [];
-    const mine = sameWeek ? d.top.find((p) => p.h === meH) : null;
-    const allXp = sameWeek ? d.all_xp.slice() : [];
+    const myXp = S.xp || 0;
+    const others = allTime ? d.top.filter((p) => p.h !== meH) : [];
+    const mine = allTime ? d.top.find((p) => p.h === meH) : null;
+    const allXp = allTime ? d.all_xp.slice() : [];
     if (mine) allXp.splice(allXp.indexOf(mine.xp), 1);
     const total = allXp.length + (myXp > 0 ? 1 : 0);
     const rank = myXp > 0 ? 1 + allXp.filter((x) => x > myXp).length : null;
@@ -456,14 +457,14 @@
         <span class="pts">${p.xp} XP</span>
       </div>`;
     return `
-      <section style="display:flex;flex-direction:column;gap:6px"><div class="eyebrow">The Agora · this week</div><h1>Weekly board</h1>
-        <p class="muted" style="font-weight:700">Resets every Monday. Everyone shows up under a made-up name. Yours is <b>${esc(nickname(meH))}</b>.</p></section>
+      <section style="display:flex;flex-direction:column;gap:6px"><div class="eyebrow">The Agora · all time</div><h1>Leaderboard</h1>
+        <p class="muted" style="font-weight:700">Every XP you've ever earned counts. Everyone shows up under a made-up name. Yours is <b>${esc(nickname(meH))}</b>.</p></section>
       <section class="card" style="display:flex;flex-direction:column;gap:6px">
-        ${rank ? `<h3>You're #${rank} of ${total} this week${total >= 5 ? ` · top ${Math.max(1, Math.ceil((rank / total) * 100))}%` : ""}</h3>` : `<h3>Finish a lesson to join this week's board</h3>`}
-        <p class="muted" style="font-weight:700;font-size:14px">${myXp} XP this week · board updated ${hrs < 1 ? "under an hour" : hrs === 1 ? "1 hour" : hrs + " hours"} ago</p>
+        ${rank ? `<h3>You're #${rank} of ${total}${total >= 5 ? ` · top ${Math.max(1, Math.ceil((rank / total) * 100))}%` : ""}</h3>` : `<h3>Finish a lesson to join the board</h3>`}
+        <p class="muted" style="font-weight:700;font-size:14px">${myXp} XP all time · board updated ${hrs < 1 ? "under an hour" : hrs === 1 ? "1 hour" : hrs + " hours"} ago</p>
       </section>
       <section class="card" style="display:flex;flex-direction:column;gap:10px">
-        ${rows.length ? `<div class="board">${shown.map(row).join("")}${tail ? `<div class="prow gap">…</div>${row(tail, rank - 1)}` : ""}</div>` : `<div class="empty">${mascot()}<p class="muted" style="font-weight:700">Nobody has earned XP this week yet. Finish a lesson to take first place.</p></div>`}
+        ${rows.length ? `<div class="board">${shown.map(row).join("")}${tail ? `<div class="prow gap">…</div>${row(tail, rank - 1)}` : ""}</div>` : `<div class="empty">${mascot()}<p class="muted" style="font-weight:700">Nobody has earned XP yet. Finish a lesson to take first place.</p></div>`}
       </section>
       <p class="muted" style="font-size:13px;font-weight:700;text-align:center">Built from the anonymous usage numbers we already measure with PostHog. No names, no accounts, nothing new stored. Your spot updates live; everyone else every few hours.</p>`;
   }
