@@ -122,7 +122,7 @@
       const p = (t) => [24 + 19 * Math.cos(t), 26 + 19 * Math.sin(t)];
       const [x1, y1] = p(a), [x2, y2] = p(b);
       return `<ellipse cx="${x1.toFixed(1)}" cy="${y1.toFixed(1)}" rx="3" ry="6" transform="rotate(${(a * 180 / Math.PI + 90).toFixed(0)} ${x1.toFixed(1)} ${y1.toFixed(1)})"/><ellipse cx="${x2.toFixed(1)}" cy="${y2.toFixed(1)}" rx="3" ry="6" transform="rotate(${(b * 180 / Math.PI + 90).toFixed(0)} ${x2.toFixed(1)} ${y2.toFixed(1)})"/>`;
-    }).join("")}</g><text x="24" y="31" text-anchor="middle" font-family="GFS Didot, Georgia, serif" font-size="18" fill="var(--ink)">${letter}</text></svg>`;
+    }).join("")}</g><text x="24" y="31" text-anchor="middle" font-family="GFS Didot, Georgia, serif" font-size="18" fill="var(--ink)">${esc(letter)}</text></svg>`;
   }
 
   /** Homer the armadillo, in a laurel wreath. mood: happy | sad | cheer */
@@ -154,10 +154,13 @@
     if (!S.sound) return;
     try {
       actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === "suspended") {
+        actx.resume().catch(() => {});
+      }
       freqs.forEach((f, i) => {
         const o = actx.createOscillator(), g = actx.createGain();
         o.type = type; o.frequency.value = f;
-        const t0 = actx.currentTime + i * gap;
+        const t0 = Math.max(actx.currentTime, actx.currentTime + i * gap);
         g.gain.setValueAtTime(0.0001, t0);
         g.gain.exponentialRampToValueAtTime(vol, t0 + 0.01);
         g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
@@ -175,8 +178,12 @@
   const buzz = (ms) => { try { navigator.vibrate && navigator.vibrate(ms); } catch { /* optional */ } };
 
   // ---------- confetti ----------
+  let confettiFrame = null;
   function confetti() {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const existing = $("#confetti");
+    if (existing) existing.remove();
+    if (confettiFrame) { cancelAnimationFrame(confettiFrame); confettiFrame = null; }
     const c = document.createElement("canvas");
     c.id = "confetti";
     document.body.appendChild(c);
@@ -193,7 +200,8 @@
         p.vy += 0.35; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.vx *= 0.99;
         ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c; ctx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); ctx.restore();
       }
-      if (++f < 150) requestAnimationFrame(step); else c.remove();
+      if (++f < 150) confettiFrame = requestAnimationFrame(step);
+      else { c.remove(); confettiFrame = null; }
     })();
   }
 
@@ -214,10 +222,26 @@
   }
 
   // ---------- state + persistence ----------
+  const safeJsonParse = (str) => {
+    try {
+      return JSON.parse(str, (k, v) => (k === "__proto__" || k === "constructor" || k === "prototype" ? undefined : v));
+    } catch { return null; }
+  };
+  function sanitizeState(parsed) {
+    const base = E.freshState();
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return base;
+    const s = Object.assign(base, parsed);
+    s.days = s.days && typeof s.days === "object" ? s.days : {};
+    s.done = s.done && typeof s.done === "object" ? s.done : {};
+    s.items = s.items && typeof s.items === "object" ? s.items : {};
+    s.badges = s.badges && typeof s.badges === "object" ? s.badges : {};
+    s.freezes = typeof s.freezes === "number" && !isNaN(s.freezes) ? s.freezes : 1;
+    return s;
+  }
   function loadLocal() {
     try {
       const raw = localStorage.getItem(LS_KEY);
-      if (raw) return Object.assign(E.freshState(), JSON.parse(raw));
+      if (raw) return sanitizeState(safeJsonParse(raw));
     } catch { /* storage can be blocked */ }
     return E.freshState();
   }
@@ -252,7 +276,8 @@
   function trackAppOpened() {
     if (!window.posthog) return;
     let v = {};
-    try { v = JSON.parse(localStorage.getItem(VISIT_KEY) || "{}") || {}; } catch { /* storage can be blocked */ }
+    try { v = JSON.parse(localStorage.getItem(VISIT_KEY) || "{}"); } catch { /* storage can be blocked */ }
+    if (!v || typeof v !== "object" || Array.isArray(v)) v = {};
     const t = today();
     const qs = new URLSearchParams(location.search);
     const campaign = {};
@@ -269,7 +294,9 @@
     syncProgress();
     const live = E.liveStreak(S, t);
     const streakLost = S.streak > 0 && live === 0;
-    track("app_opened", { first_visit: firstVisit, returning: !firstVisit, days_since_last_visit: daysSinceLast, referrer_host: refHost, ...campaign, streak_lost: streakLost, entry_tab: location.hash.slice(1) || null });
+    const h = location.hash.slice(1);
+    const entryTab = TABS.some((tab) => tab.id === h) ? h : null;
+    track("app_opened", { first_visit: firstVisit, returning: !firstVisit, days_since_last_visit: daysSinceLast, referrer_host: refHost, ...campaign, streak_lost: streakLost, entry_tab: entryTab });
     if (streakLost) track("streak_lost", { lost_streak: S.streak, last_active: S.lastDay });
   }
   /** After XP is added: fire goal and streak events when they change. */
@@ -324,8 +351,8 @@
     try {
       const snap = await db.doc(`data/users/${uid}/state`).get();
       if (snap.exists) {
-        const remote = Object.assign(E.freshState(), JSON.parse(snap.data().s));
-        if ((remote.updatedAt || 0) > (S.updatedAt || 0)) {
+        const remote = sanitizeState(safeJsonParse(snap.data().s));
+        if (!run && (remote.updatedAt || 0) > (S.updatedAt || 0)) {
           S = remote;
           try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch { /* fine */ }
         } else if (S.updatedAt) save();
@@ -358,6 +385,7 @@
     scrollTo(0, 0);
   }
   addEventListener("hashchange", () => {
+    if (run) closeRun();
     const h = location.hash.slice(1);
     if (TABS.some((t) => t.id === h) && h !== ui.tab) { ui.tab = h; render(); }
   });
@@ -581,7 +609,14 @@
     if (!cloud.db) {
       return `<section class="card empty">${mascot("sad")}<h3>The team board needs you signed in</h3><p class="muted">Open this page from claude.ai while signed in to see your team. Your own progress still saves on this device.</p></section>`;
     }
-    const rows = cloud.players.map((p) => ({ ...p, weekXp: p.weekKey === wk ? p.weekXp || 0 : 0 }));
+    const rows = cloud.players.map((p) => ({
+      ...p,
+      xp: Number(p.xp) || 0,
+      streak: Number(p.streak) || 0,
+      learned: Number(p.learned) || 0,
+      rodeoBest: Number(p.rodeoBest) || 0,
+      weekXp: p.weekKey === wk ? Number(p.weekXp) || 0 : 0,
+    }));
     const sorted = rows.slice().sort((a, b) => ui.boardMode === "week" ? b.weekXp - a.weekXp || b.xp - a.xp : ui.boardMode === "rodeo" ? (b.rodeoBest || 0) - (a.rodeoBest || 0) : b.xp - a.xp);
     const teamWeek = rows.reduce((a, p) => a + p.weekXp, 0);
     const teamLearned = rows.reduce((a, p) => a + (p.learned || 0), 0);
@@ -615,12 +650,18 @@
     if (!cloud.user) return;
     const els = [...document.querySelectorAll("[data-pid]")];
     if (!els.length) return;
-    const ps = await cloud.user.profiles(els.map((e) => e.dataset.pid));
+    let ps;
+    try {
+      ps = await cloud.user.profiles(els.map((e) => e.dataset.pid));
+    } catch (e) {
+      console.warn("[greek] profiles failed", e);
+      return;
+    }
     for (const el of els) {
-      const p = ps[el.dataset.pid];
+      const p = ps && ps[el.dataset.pid];
       if (!p) continue;
       const img = el.querySelector("[data-av]");
-      if (img) img.src = p.avatarUrl;
+      if (img && typeof p.avatarUrl === "string" && /^https?:\/\//i.test(p.avatarUrl)) img.src = p.avatarUrl;
       const nm = el.querySelector("[data-nm]");
       if (nm) nm.textContent = p.isMe ? `${p.name || "You"} (you)` : p.name || "Teammate";
     }
@@ -638,7 +679,7 @@
       if (!q) return true;
       return JSON.stringify(it).toLowerCase().includes(q);
     });
-    const unitTitle = (id) => IX.course.units.find((u) => u.id === id).title;
+    const unitTitle = (id) => IX.course.units.find((u) => u.id === id)?.title || "";
     return `
       <section style="display:flex;flex-direction:column;gap:6px"><div class="eyebrow">For whoever's teaching</div><h1>Teach it in 30 seconds</h1><p class="muted" style="font-weight:700">Every root and idea with a one-breath line, a Texas example and a Slack-ready copy. Tap Huddle on any unit to present it at standup.</p></section>
       <input class="search" id="teach-q" type="search" placeholder="Search: tele, hubris, rodeo…" value="${esc(ui.teachQuery)}" aria-label="Search">
@@ -757,6 +798,8 @@
     }
     run = null; ui.overlay = null;
     const o = $(".lesson"); if (o) o.remove();
+    const conf = $("#confetti"); if (conf) conf.remove();
+    if (confettiFrame) { cancelAnimationFrame(confettiFrame); confettiFrame = null; }
     clearTimeout(rodeoTimer);
     render();
   }
@@ -923,8 +966,18 @@
       }
       selL = selR = null;
     };
-    document.querySelectorAll("[data-l]").forEach((b) => b.addEventListener("click", () => { document.querySelectorAll("[data-l]").forEach((x) => x.classList.remove("sel")); selL = b.dataset.l; b.classList.add("sel"); tryPair(); }));
-    document.querySelectorAll("[data-r]").forEach((b) => b.addEventListener("click", () => { document.querySelectorAll("[data-r]").forEach((x) => x.classList.remove("sel")); selR = b.dataset.r; b.classList.add("sel"); tryPair(); }));
+    document.querySelectorAll("[data-l]").forEach((b) => b.addEventListener("click", () => {
+      if (run.answered || b.disabled) return;
+      if (selL === b.dataset.l) { b.classList.remove("sel"); selL = null; return; }
+      document.querySelectorAll("[data-l]").forEach((x) => x.classList.remove("sel"));
+      selL = b.dataset.l; b.classList.add("sel"); tryPair();
+    }));
+    document.querySelectorAll("[data-r]").forEach((b) => b.addEventListener("click", () => {
+      if (run.answered || b.disabled) return;
+      if (selR === b.dataset.r) { b.classList.remove("sel"); selR = null; return; }
+      document.querySelectorAll("[data-r]").forEach((x) => x.classList.remove("sel"));
+      selR = b.dataset.r; b.classList.add("sel"); tryPair();
+    }));
   }
 
   const RIGHT = ["That's right as rain.", "Yeehaw! Nailed it.", "Smarter than a tree full of owls.", "Bullseye, partner.", "Aristotle would be proud.", "You're on a roll."];

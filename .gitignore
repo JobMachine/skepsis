@@ -7,3 +7,9 @@ app/vercel/
 video/out/
 video/node_modules/
 app/.env
+.env
+.env.*
+.skepsis/
+*.bad-*
+*.tmp
+*.tgz

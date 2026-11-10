@@ -12,7 +12,7 @@ const easeOut = Easing.bezier(0.16, 1, 0.3, 1);
 const SQ = 420; // top of the centered square: (1920 - 1080) / 2
 
 // Timeline (30 fps)
-const T = { hook: 0, phone: 42, roots: 128, greek: 264, montage: 358, end: 380 } as const;
+const T = { hook: 0, phone: 42, roots: 128, greek: 264, montage: 360, end: 382 } as const;
 const ROOT_EACH = 34;
 const GREEK_EACH = 48;
 export const REEL_FRAMES = 450; // 15 s
@@ -135,7 +135,7 @@ const GreekQ: React.FC<{ q: (typeof QUIZ)[number] }> = ({ q }) => {
       <div style={{ position: "absolute", top: 980, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 40, transform: `translateY(${(1 - btns) * 120}px)`, opacity: btns }}>
         {btn("Greek", true)}{btn("Not Greek", false)}
       </div>
-      <div style={{ position: "absolute", top: 1230, left: 90, right: 90, textAlign: "center", padding: "26px 30px", borderRadius: 26, background: q.greek ? C.oliveSoft : C.brandSoft, fontFamily: q.greek ? F.ui : F.ui, fontWeight: 800, fontSize: 46, color: C.ink, transform: `scale(${why})`, opacity: Math.min(1, why * 1.4) }}>
+      <div style={{ position: "absolute", top: 1230, left: 90, right: 90, textAlign: "center", padding: "26px 30px", borderRadius: 26, background: q.greek ? C.oliveSoft : C.brandSoft, fontFamily: F.ui, fontWeight: 800, fontSize: 46, color: C.ink, transform: `scale(${why})`, opacity: Math.min(1, why * 1.4) }}>
         {q.greek ? <><span style={{ fontFamily: F.greek, fontWeight: 400 }}>κύκλος</span> (kyklos) = circle</> : q.why}
       </div>
     </AbsoluteFill>
@@ -178,7 +178,7 @@ export const SkepsisReel: React.FC = () => {
       <Pill o={label}>The Greek inside <span style={{ color: C.brand }}>everyday English</span></Pill>
       <Sequence from={T.roots} durationInFrames={T.greek - T.roots} premountFor={20}><Roots /></Sequence>
       <Sequence from={T.greek} durationInFrames={T.montage - T.greek} premountFor={20}><IsItGreek /></Sequence>
-      <Sequence from={T.montage} durationInFrames={T.end - T.montage + 2} premountFor={20}><Square><Montage /></Square></Sequence>
+      <Sequence from={T.montage} durationInFrames={T.end - T.montage} premountFor={20}><Square><Montage /></Square></Sequence>
       {f >= T.end && <Square><Freeze frame={Math.min(f - T.end, 25)}><EndCard /></Freeze></Square>}
 
       <div style={{ position: "absolute", top: 300, left: 0, right: 0, textAlign: "center", ...pop(10) }}>

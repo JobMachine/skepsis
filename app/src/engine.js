@@ -88,8 +88,11 @@ const Engine = (() => {
       if (s.freezes < 1) s.freezes = 1;
     }
     if (s.lastDay === today) return out;
-    if (!s.lastDay || s.lastDay > today) {
+    if (!s.lastDay) {
       s.streak = 1;
+    } else if (s.lastDay > today) {
+      s.streak = 1;
+      out.reset = true;
     } else {
       const missed = missedWeekdays(s.lastDay, today);
       if (missed === 0) {
@@ -111,11 +114,13 @@ const Engine = (() => {
   }
 
   /** Streak as it stands today, without recording activity (0 if it has lapsed). */
-  function liveStreak(s, today) {
-    if (!s.lastDay) return 0;
+  function liveStreak(s, today = dayKey()) {
+    if (!s.lastDay || s.lastDay > today) return 0;
     if (s.lastDay === today) return s.streak;
     const missed = missedWeekdays(s.lastDay, today);
-    return missed <= s.freezes ? s.streak : 0;
+    const wk = weekKey(today);
+    const freezes = s.freezeWeek !== wk ? Math.max(s.freezes, 1) : s.freezes;
+    return missed <= freezes ? s.streak : 0;
   }
 
   function addXp(s, today, n) {
@@ -132,23 +137,26 @@ const Engine = (() => {
   // ---------- spaced review (Leitner boxes) ----------
   const INTERVALS = [1, 3, 7, 14, 30]; // days until the next review for box 1..5
 
-  function learn(s, id, today) {
+  function learn(s, id, today = dayKey()) {
     if (!s.items[id]) s.items[id] = { box: 1, due: addDays(today, INTERVALS[0]), right: 0, wrong: 0 };
   }
   /** Grade one answer. A miss drops the item back to box 1. */
-  function grade(s, id, correct, today) {
+  function grade(s, id, correct, today = dayKey()) {
     learn(s, id, today);
     const it = s.items[id];
     if (correct) {
       it.right += 1;
-      if (it.due <= today) it.box = Math.min(it.box + 1, INTERVALS.length);
+      if (it.due <= today) {
+        it.box = Math.min(it.box + 1, INTERVALS.length);
+        it.due = addDays(today, INTERVALS[it.box - 1]);
+      }
     } else {
       it.wrong += 1;
       it.box = 1;
+      it.due = addDays(today, INTERVALS[0]);
     }
-    it.due = addDays(today, INTERVALS[it.box - 1]);
   }
-  function dueItems(s, today) {
+  function dueItems(s, today = dayKey()) {
     return Object.entries(s.items)
       .filter(([, v]) => v.due <= today)
       .sort((a, b) => (a[1].due < b[1].due ? -1 : a[1].due > b[1].due ? 1 : a[1].box - b[1].box))
@@ -230,7 +238,7 @@ const Engine = (() => {
 
   // ---------- question builders ----------
   // Every question: { type, itemId, ... } where type is intro | mcq | build | match | tf.
-  const meaningOf = (it) => (it.kind === "root" ? it.m : it.m);
+  const meaningOf = (it) => it.m;
   const labelOf = (it) => (it.kind === "root" ? it.root : it.kind === "idea" ? it.term : it.w);
   const familyOf = (it) => (it.kind === "root" ? it.ex.map((e) => e[0]).join(" · ") : "");
 
@@ -378,14 +386,17 @@ const Engine = (() => {
     for (const it of picks) {
       if (it.kind === "root") {
         const roll = r();
-        steps.push(roll < 0.4 ? qDecode(ix, it, 2, r) : roll < 0.7 ? qBuild(ix, it, it.ex.findIndex((e) => e[2].length >= 2), r) : qReverse(ix, it, r));
-      } else {
+        const bi = it.ex.findIndex((e) => e[2].length >= 2);
+        steps.push(roll < 0.4 ? qDecode(ix, it, 2, r) : (roll < 0.7 && bi >= 0) ? qBuild(ix, it, bi, r) : qReverse(ix, it, r));
+      } else if (it.kind === "idea") {
         steps.push(r() < 0.5 ? qScenario(ix, it, r) : qStory(ix, it, r));
+      } else {
+        steps.push(qOrigin(it));
       }
     }
     steps.push(qMatch(ix, shuffle(its, r), r));
     // A "Greek or not?" check in every unit keeps people from over-applying roots.
-    steps.splice(Math.floor(r() * steps.length), 0, qOrigin(ix.origins[Math.floor(r() * ix.origins.length)]));
+    if (ix.origins.length) steps.splice(Math.floor(r() * steps.length), 0, qOrigin(ix.origins[Math.floor(r() * ix.origins.length)]));
     return steps;
   }
 

@@ -494,7 +494,7 @@ const COURSE = {
               ],
             },
             {
-              id: "crat", kind: "root", root: "-cracy / -crat", gr: "κράτος", tr: "kratos", m: "power, rule",
+              id: "crat", kind: "root", root: "-cracy / -crat", gr: "κράτος", tr: "kratos", m: "power, authority",
               hook: "Democrat, autocrat, bureaucrat: each one tells you who holds the power.",
               say: "-cracy means rule. Democracy: the people rule. Autocracy: one person rules alone.",
               ex: [
@@ -603,7 +603,7 @@ const COURSE = {
               say: "Phil means love. Philosophy: love of wisdom. Philanthropy: love of people.",
               ex: [
                 ["philosophy", "the love of wisdom", ["philo", "sophy"]],
-                ["Philadelphia", "the city of 'brotherly love'", ["phil", "adelphia"]],
+                ["Philadelphia", "the city of 'brotherly love'", ["Phil", "adelphia"]],
                 ["bibliophile", "a person who loves books", ["biblio", "phile"]],
               ],
             },

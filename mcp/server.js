@@ -20,7 +20,7 @@ const server = new McpServer(
 const run = (fn) => async (args) => {
   try {
     const out = await fn(args || {});
-    return { content: [{ type: "text", text: typeof out === "string" ? out : out.text }] };
+    return { content: [{ type: "text", text: typeof out === "string" ? out : (out?.text ?? "") }] };
   } catch (e) {
     return { content: [{ type: "text", text: e instanceof Error ? e.message : String(e) }], isError: true };
   }
@@ -40,7 +40,7 @@ server.registerTool("list_course", {
 server.registerTool("start_lesson", {
   title: "Start a lesson",
   description: `Start the next lesson (or a given lesson id like "u1l2", or a unit roundup like "u1-review"). Returns cards to teach and the first question. A lesson is ~3 minutes: guess-first warm-up, new roots/ideas, then practice. ${TUTOR}`,
-  inputSchema: { lesson_id: z.string().max(40).optional().describe('Lesson id from list_course. Leave empty for the next lesson.') },
+  inputSchema: { lesson_id: z.string().max(40).nullish().describe('Lesson id from list_course. Leave empty for the next lesson.') },
 }, run(({ lesson_id }) => startLesson(loadState(), lesson_id)));
 
 server.registerTool("answer", {

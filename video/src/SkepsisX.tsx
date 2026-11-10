@@ -224,7 +224,7 @@ export const Montage: React.FC = () => {
     <AbsoluteFill>
       <div style={{ position: "absolute", left: 80, top: 110, display: "flex", alignItems: "center", gap: 18, padding: "20px 34px", borderRadius: 34, background: C.surface, border: `3px solid ${C.line}`, boxShadow: `0 8px 0 ${C.line}`, transform: `scale(${pop(0)})`, fontFamily: F.ui, fontWeight: 900, color: C.ink }}>
         <Flame size={76} />
-        <span style={{ fontSize: 96, color: C.flame, display: "inline-block", minWidth: 60, transform: `scale(${f >= 7 ? 1 + (1 - tick) * 0.6 : 1}) translateY(${f >= 7 ? 0 : 0}px)` }}>{f >= 7 ? 7 : 6}</span>
+        <span style={{ fontSize: 96, color: C.flame, display: "inline-block", minWidth: 60, transform: `scale(${f >= 7 ? 1 + (1 - tick) * 0.6 : 1})` }}>{f >= 7 ? 7 : 6}</span>
         <span style={{ fontSize: 40 }}>day<br />streak</span>
       </div>
       <div style={{ position: "absolute", right: 80, top: 130, display: "flex", alignItems: "center", gap: 12, padding: "18px 30px", borderRadius: 999, background: C.goldSoft, border: `3px solid ${C.gold}`, transform: `scale(${pop(3)})`, fontFamily: F.ui, fontWeight: 900, fontSize: 48, color: C.goldDeep }}>

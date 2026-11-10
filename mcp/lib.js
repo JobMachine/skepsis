@@ -17,7 +17,7 @@ export const IX = E.indexCourse(COURSE);
 
 // ---------- progress file ----------
 export function homeDir() {
-  return process.env.SKEPSIS_HOME || path.join(os.homedir(), ".skepsis");
+  return process.env.SKEPSIS_HOME ? path.resolve(process.env.SKEPSIS_HOME) : path.join(os.homedir(), ".skepsis");
 }
 export function progressPath() {
   return path.join(homeDir(), "progress.json");
@@ -27,11 +27,24 @@ export function loadState() {
   const file = progressPath();
   try {
     const raw = fs.readFileSync(file, "utf8");
-    return Object.assign(E.freshState(), JSON.parse(raw), { onboarded: true });
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new TypeError("State must be an object");
+    }
+    const fresh = E.freshState();
+    const safe = {};
+    for (const [k, v] of Object.entries(parsed)) {
+      if (k === "__proto__" || k === "constructor" || k === "prototype") continue;
+      if (k in fresh && v !== null && (fresh[k] === null || typeof v === typeof fresh[k])) {
+        safe[k] = v;
+      }
+    }
+    return Object.assign(fresh, safe, { onboarded: true });
   } catch (e) {
     if (e && e.code !== "ENOENT") {
-      // Keep a copy of an unreadable file instead of silently overwriting it.
-      try { fs.renameSync(file, `${file}.bad-${Date.now()}`); } catch { /* ignore */ }
+      if (e instanceof SyntaxError || e instanceof TypeError) {
+        try { fs.renameSync(file, `${file}.bad-${Date.now()}`); } catch { /* ignore */ }
+      }
       console.error(`[skepsis] could not read ${file}: ${e.message}. Starting fresh.`);
     }
     return Object.assign(E.freshState(), { onboarded: true });
@@ -41,16 +54,21 @@ export function loadState() {
 export function saveState(s) {
   s.updatedAt = Date.now();
   const file = progressPath();
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  const tmp = `${file}.${process.pid}.tmp`;
-  fs.writeFileSync(tmp, JSON.stringify(s, null, 2));
-  fs.renameSync(tmp, file);
+  fs.mkdirSync(path.dirname(file), { recursive: true, mode: 0o700 });
+  const tmp = `${file}.${process.pid}.${randomUUID().slice(0, 8)}.tmp`;
+  try {
+    fs.writeFileSync(tmp, JSON.stringify(s, null, 2), { mode: 0o600 });
+    fs.renameSync(tmp, file);
+  } catch (err) {
+    try { fs.unlinkSync(tmp); } catch { /* ignore */ }
+    throw err;
+  }
 }
 
 // ---------- helpers ----------
 const today = () => E.dayKey();
 const stripTags = (h) => String(h).replace(/<[^>]+>/g, "");
-const norm = (t) => String(t).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9α-ω\s'-]/g, " ").replace(/\s+/g, " ").trim();
+const norm = (t) => String(t).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ς/g, "σ").replace(/[^a-z0-9α-ω\s'-]/g, " ").replace(/\s+/g, " ").trim();
 const LETTERS = "abcdefgh";
 
 export function itemCard(it) {
@@ -117,28 +135,30 @@ export function grade(q, response) {
   const r = norm(raw);
   if (!r) return { error: "Empty reply. Pass the learner's answer." };
   if (q.type === "mcq") {
-    let idx = /^\d+$/.test(r) ? Number(r) - 1 : -1;
+    if (/^\d+$/.test(r)) {
+      const idx = Number(r) - 1;
+      if (idx < 0 || idx >= q.options.length) return { error: `Reply with an option number from 1 to ${q.options.length}.` };
+      return { ok: norm(q.options[idx]) === norm(q.answer), chosen: q.options[idx] };
+    }
+    const opts = q.options.map(norm);
+    let idx = opts.indexOf(r);
     if (idx < 0) {
-      const opts = q.options.map(norm);
-      idx = opts.indexOf(r);
-      if (idx < 0) {
-        const hits = opts.map((o, i) => (o.includes(r) || r.includes(o) ? i : -1)).filter((i) => i >= 0);
-        if (hits.length === 1) idx = hits[0];
-      }
+      const hits = opts.map((o, i) => (o.includes(r) || r.includes(o) ? i : -1)).filter((i) => i >= 0);
+      if (hits.length === 1) idx = hits[0];
     }
     if (idx < 0 || idx >= q.options.length) return { error: `Reply with an option number from 1 to ${q.options.length}.` };
-    return { ok: q.options[idx] === q.answer, chosen: q.options[idx] };
+    return { ok: norm(q.options[idx]) === norm(q.answer), chosen: q.options[idx] };
   }
   if (q.type === "tf") {
     let v = null;
     if (/^(1|greek|yes|y|true|it is greek)$/.test(r)) v = true;
-    else if (/^(2|not greek|no|n|false|not)$/.test(r)) v = false;
+    else if (/^(2|not[ -]?greek|no|n|false|not)$/.test(r)) v = false;
     if (v === null) return { error: 'Reply 1 (Greek) or 2 (Not Greek).' };
     return { ok: v === q.answer };
   }
   if (q.type === "build") {
     if (r.replace(/[\s+-]/g, "") === q.word.toLowerCase()) return { ok: true };
-    const toks = raw.split(/[\s,+]+/).filter(Boolean);
+    const toks = raw.split(/[\s,+-]+/).map((t) => t.replace(/\.$/, "")).filter(Boolean);
     const pieces = [];
     for (const t of toks) {
       if (/^\d+$/.test(t)) {
@@ -154,8 +174,13 @@ export function grade(q, response) {
     return { ok: pieces.length === q.answer.length && pieces.every((p, i) => p === q.answer[i]) };
   }
   if (q.type === "match") {
-    const pairs = [...raw.toLowerCase().matchAll(/(\d)\s*[-:=]?\s*([a-h])/g)];
+    const pairs = [...raw.toLowerCase().matchAll(/(\d)\s*(?:[-:=]\s*)?([a-h])/g)];
     if (pairs.length < q.pairs.length) return { error: `Give all ${q.pairs.length} pairs, like "1b 2a 3d 4c".` };
+    const seen = new Set();
+    for (const [, n] of pairs) {
+      if (seen.has(n)) return { error: `Item ${n} was paired more than once.` };
+      seen.add(n);
+    }
     const ok = pairs.every(([, n, l]) => {
       const left = q.left[Number(n) - 1], right = q.right[LETTERS.indexOf(l)];
       return q.pairs.some(([a, b]) => a === left && b === right);
@@ -291,7 +316,7 @@ export function answer(S, sessionId, response) {
   if (cards.length) lines.push("", "Teach these next:", ...cards.map((c) => `\n${c}`));
   if (question) {
     saveState(S);
-    const left = sess.steps.slice(sess.i).filter((x) => x.type !== "intro").length;
+    const left = sess.steps.slice(sess.i).filter((x) => x.type !== "intro" && x.type !== "intro-origin").length;
     lines.push("", `Next question (${left} left, don't reveal the answer):`, renderQuestion(question));
     return { text: lines.join("\n"), done: false, correct: q.guess ? null : g.ok };
   }
@@ -353,13 +378,13 @@ export function explain(term) {
   const unit = COURSE.units.find((u) => u.id === first.unitId);
   return {
     found: true,
-    text: [itemCard(first), `(Unit: ${unit.title})`, ...(rest.length ? [``, `Also matches: ${rest.slice(0, 5).map((r) => E.labelOf(r)).join(", ")}`] : [])].join("\n"),
+    text: [itemCard(first), `(Unit: ${unit ? unit.title : "General"})`, ...(rest.length ? [``, `Also matches: ${rest.slice(0, 5).map((r) => E.labelOf(r)).join(", ")}`] : [])].join("\n"),
   };
 }
 
 /** Spot known Greek roots inside any English word. Spelling-based: say so. */
 export function breakDown(word) {
-  const w = String(word).toLowerCase().replace(/[^a-z]/g, "");
+  const w = String(word).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]/g, "");
   if (w.length < 3) throw new Error("Give a whole English word, like photophobia.");
   const cands = [];
   for (const it of IX.roots) {
@@ -417,6 +442,6 @@ export function progressText(S) {
     `Learned: ${Object.keys(S.items).length} of ${IX.items.size} · due for review: ${E.dueItems(S, t).length} · accuracy ${acc}%`,
     `Lessons done: ${Object.keys(S.done).length} of ${E.pathNodes(IX).length}${next ? ` · next: ${next.id} (${next.title})` : ""}`,
     `Laurels: ${badges.length ? badges.join(", ") : "none yet"}`,
-    `Saved in ${progressPath()}`,
+    `Saved in ${progressPath().replace(os.homedir(), "~")}`,
   ].join("\n");
 }
