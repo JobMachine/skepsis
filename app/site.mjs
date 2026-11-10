@@ -213,7 +213,7 @@ function appPage(appMarkup, all) {
 </head><body>${fallback}${app}${footer}</body></html>`;
 }
 
-function generateLlmsTxt() {
+function generateLlmsTxt(all) {
   return `# Skepsis
 
 > Learn Greek roots, myths and ideas hiding in everyday English (tele, photo, hubris, kudos) in 3 minutes a day, with Texas examples.
@@ -221,7 +221,7 @@ function generateLlmsTxt() {
 Skepsis is a free, open-source educational web app and Model Context Protocol (MCP) server that teaches Greek etymology and ancient concepts with Texas-flavored explanations.
 
 ## Key Resources
-- [Full Knowledge Base](${SITE}/llms-full.txt): Complete plain-text dictionary of all 127 Greek roots, myths, and ideas.
+- [Full Knowledge Base](${SITE}/llms-full.txt): Complete plain-text dictionary of all ${all.filter((p) => p.it.kind !== "origin").length} Greek roots, myths and ideas, plus ${all.filter((p) => p.it.kind === "origin").length} "Is it Greek?" words.
 - [All Words & Roots](${SITE}/words): Browse all word pages and root families.
 - [About Skepsis](${SITE}/about): Methodology (spaced repetition, guess-first) and open-source mission.
 - [GitHub Repository](${REPO}): Source code (MIT), data schemas, and research notes.
@@ -297,7 +297,7 @@ export function buildSite(appMarkup, outDir) {
   for (const p of all) w(`words/${p.slug}.html`, wordPage(p, all));
   w("about.html", aboutPage(all));
   w("404.html", notFound());
-  w("llms.txt", generateLlmsTxt());
+  w("llms.txt", generateLlmsTxt(all));
   w("llms-full.txt", generateLlmsFullTxt(all));
   const today = new Date().toISOString().slice(0, 10);
   const sitemapEntry = (loc, priority, changefreq) => `  <url>\n    <loc>${SITE}${loc === "/" ? "/" : loc}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
