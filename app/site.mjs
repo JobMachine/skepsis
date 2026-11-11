@@ -29,6 +29,8 @@ const DESC = "A free, open-source game that teaches the Greek roots, myths and i
 const AUTHOR = "Ion Petropoulos";
 const AUTHOR_URL = "https://ionpetro.com";
 const PERSON = { "@type": "Person", name: AUTHOR, url: AUTHOR_URL };
+/** Product Hunt launch card (post 1311444, launched 2026-11-10). Lazy, so it never slows the app's first paint. */
+const PH_EMBED = `<div class="ph-embed"><iframe src="https://cards.producthunt.com/cards/posts/1311444?v=1" title="${NAME} on Product Hunt" width="500" height="405" loading="lazy" frameborder="0" scrolling="no" allowfullscreen style="border:none;width:100%;max-width:500px;height:405px"></iframe></div>`;
 
 // PostHog (optional): set POSTHOG_KEY in app/.env. Without it no analytics code ships at all.
 const POSTHOG_KEY = process.env.POSTHOG_KEY || "";
@@ -189,6 +191,7 @@ function aboutPage(all) {
     <h2>Open source</h2><p>Code and content are MIT-licensed on <a href="${REPO}">GitHub</a>. Corrections and new words are welcome.</p>
     <h2>Free, open, and what we measure</h2><p>${NAME} is free and always will be. The code is open under the MIT license: <a href="${REPO}">${REPO.replace("https://", "")}</a>. No account, no sign-up, no ads. Your progress stays in your browser. The only thing we do is measure how it's used with <a href="https://posthog.com">PostHog</a> (visits, lesson results, which words are hard, and session recordings with anything you type hidden), so we can make it better.</p>
     <h2>The family</h2><p>${NAME} is one of ${FAMILY.length} free, open-source learning apps, each one a short daily game:</p><ul>${FAMILY.map((a) => `<li>${a.id === "skepsis" ? `<b>${a.name}</b>` : `<a href="${sisterHref(a)}">${a.name}</a>`}: ${a.en} (<a href="${a.repo}">GitHub</a>)</li>`).join("")}</ul><p>If one helps you, a star on GitHub helps other people find it.</p>
+    <h2>On Product Hunt</h2>${PH_EMBED}
     <a class="cta" href="/">Start learning, free</a>`;
   return page({ title: `About ${NAME}: Greek roots in 3 minutes a day`, desc: DESC, path: "/about", body, jsonld: [{ "@context": "https://schema.org", "@type": "AboutPage", name: `About ${NAME}`, url: `${SITE}/about` }] });
 }
@@ -206,11 +209,12 @@ function appPage(appMarkup, all) {
   // The app markup carries its own <title>; drop it so the SEO title wins.
   const app = appMarkup.replace(/<title>[^<]*<\/title>\s*/, "").replace(/<meta name="description"[^>]*>\s*/, "").replace(/<link rel="(preconnect|stylesheet)"[^>]*>\s*/g, "");
   const fallback = `<noscript><div style="max-width:640px;margin:24px auto;padding:0 16px;font-family:system-ui"><h1>${NAME}: ${TAGLINE}</h1><p>${esc(DESC)}</p><p><a href="/words">Browse all ${all.filter((p) => p.it.kind !== "origin").length} Greek roots and ideas</a> · <a href="/about">About</a></p></div></noscript>`;
-  const footer = `<footer class="site-foot" aria-label="More"><a href="/words">All ${all.length} words</a><a href="/about">About</a><a href="${REPO}">Open source</a><a href="${REPO}/tree/main/mcp">Use with your AI agent</a>${SISTERS.map((a) => `<a href="${sisterHref(a)}">Sister app: ${a.name}</a> <a href="${a.repo}" target="_blank" rel="noopener noreferrer" aria-label="${a.name} on GitHub">GitHub</a>`).join("")}<a href="${AUTHOR_URL}">Made by ${AUTHOR}</a></footer>`;
+  const footer = `<footer class="site-foot" aria-label="More">${PH_EMBED}<a href="/words">All ${all.length} words</a><a href="/about">About</a><a href="${REPO}">Open source</a><a href="${REPO}/tree/main/mcp">Use with your AI agent</a>${SISTERS.map((a) => `<a href="${sisterHref(a)}">Sister app: ${a.name}</a> <a href="${a.repo}" target="_blank" rel="noopener noreferrer" aria-label="${a.name} on GitHub">GitHub</a>`).join("")}<a href="${AUTHOR_URL}">Made by ${AUTHOR}</a></footer>`;
   return `<!doctype html><html lang="en"><head>${head({ title: `${NAME}: ${TAGLINE}`, desc: DESC, path: "/", jsonld })}
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}
 .site-foot{max-width:560px;margin:-8px auto 0;display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:center;font:700 13px/1.4 Nunito,system-ui,sans-serif;padding:0 max(16px,env(safe-area-inset-right,0px)) calc(96px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
-.site-foot a{color:var(--muted,#5d6286);text-decoration:none}.site-foot a:hover{color:var(--brand,#3446c9)}body:has(.lesson,.huddle,.onboard) .site-foot{display:none}</style>
+.site-foot a{color:var(--muted,#5d6286);text-decoration:none}.site-foot a:hover{color:var(--brand,#3446c9)}body:has(.lesson,.huddle,.onboard) .site-foot{display:none}
+.site-foot .ph-embed{flex-basis:100%;display:flex;justify-content:center;margin-bottom:12px}</style>
 </head><body>${fallback}${app}${footer}</body></html>`;
 }
 
