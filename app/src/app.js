@@ -20,7 +20,7 @@
   // ---------- sister apps ----------
   /** The family of free, open-source learning apps. Keep this list the same in Skepsis, Carpe, Gnothi, Objection, Agora, Oikos and Guanxi (app.js and site.mjs). */
   const FAMILY = [
-    {"id": "skepsis", "name": "Skepsis", "url": "https://skepsis-greek.vercel.app", "repo": "https://github.com/ionpetro/skepsis", "en": "the Greek hiding in everyday English", "el": "οι ελληνικές ρίζες που κρύβονται στα αγγλικά"},
+    {"id": "skepsis", "name": "Skepsis", "url": "https://tryskepsis.com", "repo": "https://github.com/ionpetro/skepsis", "en": "the Greek hiding in everyday English", "el": "οι ελληνικές ρίζες που κρύβονται στα αγγλικά"},
     {"id": "carpe", "name": "Carpe", "url": "https://carpe-latin.vercel.app", "repo": "https://github.com/ionpetro/carpe", "en": "Latin for Greece's national exams", "el": "Λατινικά για τις Πανελλαδικές"},
     {"id": "gnothi", "name": "Gnothi", "url": "https://gnothi-greek.vercel.app", "repo": "https://github.com/ionpetro/gnothi", "en": "Ancient Greek for Greece's national exams", "el": "Αρχαία Ελληνικά για τις Πανελλαδικές"},
     {"id": "objection", "name": "Objection", "url": "https://objection-bar.vercel.app", "repo": "https://github.com/ionpetro/objection", "en": "prep for the US bar exam", "el": "προετοιμασία για τις εξετάσεις δικηγόρων των ΗΠΑ"},

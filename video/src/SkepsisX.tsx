@@ -256,7 +256,7 @@ export const EndCard: React.FC = () => {
       <div style={{ ...item(2), fontFamily: F.greek, fontSize: 70, color: C.goldSoft }}>σκέψις</div>
       <div style={{ ...item(3), fontFamily: F.west, fontSize: 168, lineHeight: 1, color: "#fff" }}>Skepsis</div>
       <div style={{ ...item(5), fontFamily: F.ui, fontWeight: 900, fontSize: 54, color: "#fff", marginTop: 6 }}>Greek roots in 3 minutes a day</div>
-      <div style={{ ...item(7), marginTop: 18, padding: "16px 36px", borderRadius: 999, background: "#fff", boxShadow: `0 7px 0 ${C.brandDeep}`, fontFamily: F.ui, fontWeight: 900, fontSize: 42, color: C.ink }}>skepsis-greek.vercel.app</div>
+      <div style={{ ...item(7), marginTop: 18, padding: "16px 36px", borderRadius: 999, background: "#fff", boxShadow: `0 7px 0 ${C.brandDeep}`, fontFamily: F.ui, fontWeight: 900, fontSize: 42, color: C.ink }}>tryskepsis.com</div>
       <div style={{ ...item(9), marginTop: 10, fontFamily: F.ui, fontWeight: 800, fontSize: 32, color: "rgba(255,255,255,0.85)" }}>open source · MCP for your agent</div>
     </AbsoluteFill>
   );

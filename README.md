@@ -2,7 +2,7 @@
 
 **Y'all already speak Greek.** Skepsis is a free, open-source game that teaches the Greek roots, myths and big ideas hiding in everyday English, in 3-minute lessons. Every word comes with a Texas example.
 
-**Play:** https://skepsis-greek.vercel.app · **Every word:** https://skepsis-greek.vercel.app/words · **Learn from your AI agent:** [MCP server](mcp/README.md) · **iOS app:** [mobile/](mobile/README.md)
+**Play:** https://tryskepsis.com · **Every word:** https://tryskepsis.com/words · **Learn from your AI agent:** [MCP server](mcp/README.md) · **iOS app:** [mobile/](mobile/README.md)
 
 ![Skepsis: Y'all already speak Greek](app/public/og.png)
 
@@ -14,7 +14,7 @@ Skepsis is free and open source (MIT). **If it helps you, please [star the repo]
 
 Skepsis is one of eight free, open-source learning apps built the same way (short daily lessons and spaced review):
 
-- **Skepsis** (this one): the Greek hiding in everyday English. [Play](https://skepsis-greek.vercel.app) · [GitHub](https://github.com/ionpetro/skepsis)
+- **Skepsis** (this one): the Greek hiding in everyday English. [Play](https://tryskepsis.com) · [GitHub](https://github.com/ionpetro/skepsis)
 - **Carpe**: Latin for Greece's national exams. [Play](https://carpe-latin.vercel.app) · [GitHub](https://github.com/ionpetro/carpe)
 - **Gnothi**: Ancient Greek for Greece's national exams. [Play](https://gnothi-greek.vercel.app) · [GitHub](https://github.com/ionpetro/gnothi)
 - **Objection**: prep for the US bar exam (MBE). [Play](https://objection-bar.vercel.app) · [GitHub](https://github.com/ionpetro/objection)

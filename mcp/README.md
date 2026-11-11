@@ -1,6 +1,6 @@
 # Skepsis MCP server
 
-Learn Greek roots, myths and big ideas through your AI agent. Your agent becomes the tutor: it teaches a card, asks one question at a time, grades your reply, and brings missed words back with spaced review. It's the same course, streaks and XP as the [Skepsis web app](https://skepsis-greek.vercel.app).
+Learn Greek roots, myths and big ideas through your AI agent. Your agent becomes the tutor: it teaches a card, asks one question at a time, grades your reply, and brings missed words back with spaced review. It's the same course, streaks and XP as the [Skepsis web app](https://tryskepsis.com).
 
 Needs Node 18 or newer. Nothing to sign up for.
 

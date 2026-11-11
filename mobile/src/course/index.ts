@@ -1,5 +1,5 @@
 // One source of truth: the app runs the same lessons and game rules as the website
-// (skepsis-greek.vercel.app) and the MCP server. Edit ../../../app/src/*.js, not copies.
+// (tryskepsis.com) and the MCP server. Edit ../../../app/src/*.js, not copies.
 import type { Course, CourseIndex, EngineApi } from "./types";
 
 /* eslint-disable @typescript-eslint/no-require-imports */

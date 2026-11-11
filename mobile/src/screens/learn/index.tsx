@@ -23,9 +23,9 @@ export function rootOfDay(today: string): IndexedItem {
 }
 
 export function shareText(it: IndexedItem) {
-  if (it.kind === "root") return `${it.root} (${it.gr}) = ${it.m}\n${it.say}\nTexas take: ${it.hook}\nWords: ${it.ex.map((e) => e[0]).join(", ")}\n\nLearned on Skepsis, the free Greek roots app: https://skepsis-greek.vercel.app`;
-  if (it.kind === "idea") return `${it.term} (${it.gr}, "${it.lit}") = ${it.m}\n${it.say}\nTexas take: ${it.tex}\n\nLearned on Skepsis, the free Greek roots app: https://skepsis-greek.vercel.app`;
-  return `${it.w}: ${it.greek ? "Greek" : "not Greek"}. ${it.from}\n\nPlay "Is it Greek?" on Skepsis: https://skepsis-greek.vercel.app`;
+  if (it.kind === "root") return `${it.root} (${it.gr}) = ${it.m}\n${it.say}\nTexas take: ${it.hook}\nWords: ${it.ex.map((e) => e[0]).join(", ")}\n\nLearned on Skepsis, the free Greek roots app: https://tryskepsis.com`;
+  if (it.kind === "idea") return `${it.term} (${it.gr}, "${it.lit}") = ${it.m}\n${it.say}\nTexas take: ${it.tex}\n\nLearned on Skepsis, the free Greek roots app: https://tryskepsis.com`;
+  return `${it.w}: ${it.greek ? "Greek" : "not Greek"}. ${it.from}\n\nPlay "Is it Greek?" on Skepsis: https://tryskepsis.com`;
 }
 
 const GREETS = ["Howdy! Ready for three minutes of Greek?", "Saddle up, partner. One lesson keeps the streak alive.", "Fixin' to learn some Greek?", "Every English word has a story. Let's find one."];
