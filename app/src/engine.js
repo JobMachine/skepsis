@@ -280,6 +280,24 @@ const Engine = (() => {
     };
   }
 
+  /**
+   * Warm-up for a brand-new player: show a word they already know ("telephone") and ask them to
+   * tap the part that means the root's meaning. Ungraded (uses the `guess` flow), so it can't fail.
+   * Returns null if no example word splits into the root plus at least one other part.
+   */
+  function qSpot(it, r) {
+    const ex = it.ex.find((e) => Array.isArray(e[2]) && e[2].length >= 2 && e[2].includes(it.root));
+    if (!ex) return null;
+    const [w, , parts] = ex;
+    return {
+      type: "mcq", itemId: it.id, guess: true, warmup: true,
+      label: "Warm-up", word: w,
+      prompt: `You already speak a little Greek. Tap the part of <span class="w">${w}</span> that means <span class="w">"${it.m}"</span>.`,
+      options: shuffle([...new Set(parts)], r), answer: it.root,
+      explain: `${it.root} (${it.gr}) = ${it.m}. ${w} = ${parts.join(" + ")}.`, family: familyOf(it),
+    };
+  }
+
   function qBuild(ix, it, exIdx, r) {
     const [w, def, parts] = it.ex[exIdx];
     const extra = pickDistinct(ix.tilePool, Math.max(2, 5 - parts.length), r, parts);
@@ -323,7 +341,7 @@ const Engine = (() => {
    * A lesson: guess first (pretest) -> each item's intro + quick check -> practice with
    * at least two unseen-word decodes -> a match round -> one or two interleaved review items.
    * `short` (a brand-new player's first lesson): no guess, no practice round, no review: just
-   * each item's intro + quick check, then the match round. About 7 screens instead of 13.
+   * a one-tap warm-up, each item's intro + quick check, then the match round. About 8 screens instead of 13.
    */
   function buildLesson(ix, s, lessonId, seed, { short = false } = {}) {
     const r = rng(seed);
@@ -339,6 +357,9 @@ const Engine = (() => {
 
     const firstRoot = its.find((x) => x.kind === "root");
     if (firstRoot && !short) steps.push(qDecode(ix, firstRoot, 2, r, { guess: true }));
+
+    // Short (first) lesson opens with a one-tap warm-up on a word they already know.
+    if (short && firstRoot) { const w = qSpot(firstRoot, r); if (w) steps.push(w); }
 
     for (const it of its) {
       steps.push({ type: "intro", itemId: it.id });

@@ -44,7 +44,7 @@ function checkQ(q, where) {
   if (q.type === "mcq") {
     assert.ok(q.options.includes(q.answer), `${where}: answer missing (${q.prompt})`);
     assert.equal(new Set(q.options).size, q.options.length, `${where}: duplicate options`);
-    assert.ok(q.options.length >= 3, `${where}: too few options`);
+    assert.ok(q.options.length >= (q.warmup ? 2 : 3), `${where}: too few options`); // a warm-up offers only the word's own parts
   } else if (q.type === "build") {
     for (const p of q.answer) assert.ok(q.tiles.includes(p), `${where}: tile ${p} missing`);
     assert.ok(q.tiles.length > q.answer.length, `${where}: no distractor tiles`);
@@ -70,13 +70,16 @@ test("every lesson and roundup builds valid questions across many seeds", () => 
   }
 });
 
-test("the short first lesson skips the guess and practice, keeps intros, checks and the match", () => {
+test("the short first lesson opens with a one-tap warm-up, skips the guess and practice, keeps intros, checks and the match", () => {
   const s = E.freshState();
   for (let seed = 1; seed <= 30; seed++) {
     const steps = E.buildLesson(IX, s, "u1l1", seed, { short: true });
-    assert.ok(steps.length <= 8, `short lesson has ${steps.length} steps`);
-    assert.ok(!steps.some((q) => q.guess), "no guess question");
-    assert.equal(steps[0].type, "intro", "starts by teaching");
+    assert.ok(steps.length <= 9, `short lesson has ${steps.length} steps`);
+    const w = steps[0];
+    assert.ok(w.warmup && w.guess && w.type === "mcq", "starts with an ungraded warm-up tap");
+    assert.ok(w.options.includes(w.answer) && w.options.length >= 2, "warm-up answer is one of the word's parts");
+    assert.ok(!steps.slice(1).some((q) => q.guess), "no other guess question");
+    assert.equal(steps[1].type, "intro", "then teaches");
     steps.forEach((q, i) => checkQ(q, `short#${i} seed ${seed}`));
   }
 });

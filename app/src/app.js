@@ -87,13 +87,13 @@
     $("#star-later").addEventListener("click", () => { track("star_prompt_dismissed", { trigger: star.why, lessons: star.lessons, ask: star.ask }); $("#starask").remove(); $("#next") && $("#next").focus(); });
   }
   /** Bottom-of-screen note: open source, what we track and why, and a star prompt. The analytics line shows only where PostHog is loaded (the public website). */
-  function siteNote(sisters = true) {
+  function siteNote(sisters = true, star = true) {
     const tracked = !!window.posthog;
     return `<footer class="sitenote">
       ${sisters ? sisterNote() : ""}
       <p><b>Skepsis is free and always will be. The code is open (MIT).</b>${tracked ? " The only thing we do is measure how it's used with PostHog, so we can make it better. No account, no ads, and session recordings hide anything you type." : " No account, no ads."}</p>
-      ${starLink("btn ghost star-cta", "footer", `${I.github}<span>Star it on GitHub</span>`)}
-      <p class="sitenote-sub">A star helps other people find it.</p>
+      ${star ? `${starLink("btn ghost star-cta", "footer", `${I.github}<span>Star it on GitHub</span>`)}
+      <p class="sitenote-sub">A star helps other people find it.</p>` : ""}
     </footer>`;
   }
 
@@ -407,7 +407,7 @@
         <span class="stat xp" title="Total XP">${I.coin}<span>${S.xp}</span></span>
       </div>
       </div>
-      ${starLink("gh", "topbar", `${I.github}<span class="gh-label">${I.star}<span class="gh-text">Star</span></span>`)}
+      ${Object.keys(S.done).length ? starLink("gh", "topbar", `${I.github}<span class="gh-label">${I.star}<span class="gh-text">Star</span></span>`) : ""}
     </header>`;
   }
   function tabbar() {
@@ -503,23 +503,21 @@
   }
 
   // ---------- onboarding ----------
+  // Welcome screen: one button, straight into the short first lesson. The goal question, the
+  // family picker and the GitHub stars wait until after lesson 1 (Nov 2026 data: after they were
+  // added here, far fewer visitors started a lesson and some left for GitHub instead).
   function onboarding() {
     return `<div class="onboard">
       ${mascot("cheer")}
       <h1>Skepsis</h1>
       <p class="lede"><span class="greek" style="color:var(--brand)">σκέψις</span>: Greek for "looking closely", the root of skeptic. Y'all already speak a little Greek. Three minutes a day and you'll see it everywhere: telephone, Metroplex, astronaut, kudos.</p>
-      <div class="card" style="display:flex;flex-direction:column;gap:12px">
-        <h3>How much time a day?</h3>
-        <div class="goalopts">${E.GOALS.map((g) => `<button class="goalopt" data-goal="${g.xp}" aria-pressed="${S.goal === g.xp}">${g.label}<small>${g.sub}</small></button>`).join("")}</div>
-        ${IN_CLAUDE ? `<div class="setting" style="border:0;padding-bottom:0">
+      ${IN_CLAUDE ? `<div class="card"><div class="setting" style="border:0;padding:0">
           <div><label for="ob-board">Join the team board</label><small>Your weekly XP shows on a shared board. You can turn it off any time.</small></div>
           <input type="checkbox" class="switch" id="ob-board" ${S.board ? "checked" : ""}>
-        </div>` : ""}
-      </div>
-      <button class="btn block" id="ob-go">Saddle up</button>
-      <p class="muted" style="text-align:center;font-size:13px;font-weight:700">Weekends never break your streak. No hearts, no penalties.</p>
-      ${focusPicker()}
-      ${siteNote(false)}
+        </div></div>` : ""}
+      <button class="btn block" id="ob-go">Start lesson 1 · 2 min</button>
+      <p class="muted" style="text-align:center;font-size:13px;font-weight:700">No sign-up. No hearts, no penalties.</p>
+      ${siteNote(false, false)}
     </div>`;
   }
   function bindStars(root) {
@@ -528,7 +526,6 @@
   }
   function bindOnboarding() {
     bindStars(app());
-    app().querySelectorAll("[data-goal]").forEach((b) => b.addEventListener("click", () => { S.goal = +b.dataset.goal; render(); }));
     const ob = $("#ob-board"); if (ob) ob.addEventListener("change", (e) => { S.board = e.target.checked; });
     $("#ob-go").addEventListener("click", () => { S.onboarded = true; track("onboarding_completed", { goal_xp: S.goal }); save(); render(); startNode(E.nextNode(IX, S)); });
   }
@@ -562,7 +559,7 @@
         <div style="flex:1;min-width:0"><div class="eyebrow">Daily goal</div><h3 class="tnum">${todayXp} / ${S.goal} XP</h3><p class="muted" style="font-weight:700;font-size:14px">${E.isWeekend(t) ? "It's the weekend: optional, streak is safe." : "Weekends never break your streak."}</p></div>
         ${next ? `<button class="btn" data-start="${next.id}">${Object.keys(S.done).length ? "Continue" : "Start"}</button>` : ""}
       </section>
-      ${focusPicker()}
+      ${Object.keys(S.done).length ? focusPicker() : ""}
       <section class="quick">
         <button class="tile" data-act="practice" ${learned < 3 ? "disabled" : ""}><span style="color:var(--olive)">${I.redo}</span><b>Practice</b><span>${learned < 3 ? "Unlocks after lesson 1" : due ? `${due} due for review` : "Strengthen weak spots"}</span></button>
         <button class="tile" data-act="rodeo"><span style="color:var(--flame)">${I.shoe}</span><b>Rodeo</b><span>8 seconds a question · best ${S.rodeoBest}</span></button>
@@ -783,6 +780,7 @@
       item_label: it ? E.labelOf(it) : (q && q.word) || null,
       retry: !!q && q.label === "Try again",
       guess: !!(q && q.guess),
+      warmup: !!(q && q.warmup),
     };
   }
   function closeRun() {
@@ -1051,6 +1049,7 @@
     const st = E.touchStreak(S, t);
     if (run.mode === "practice") S.practices += 1;
     const wasDone = !!(run.node && S.done[run.node.id]);
+    const firstEver = run.mode === "lesson" && !Object.keys(S.done).length;
     if (run.node && (run.mode === "lesson" || run.mode === "roundup")) S.done[run.node.id] = { perfect, at: t };
     const fresh = E.awardBadges(S, t);
     save();
@@ -1073,8 +1072,15 @@
       </div>
       <p style="font-weight:800">${esc(streakLine)}</p>
       ${fresh.map((b) => `<div class="newbadge">${wreath(b.name[0]).replace("<svg", '<svg width="40" height="40"')}<div>New laurel: ${esc(b.name)}<br><span class="muted">${esc(b.desc)}</span></div></div>`).join("")}
+      ${firstEver ? `<div class="card" style="display:flex;flex-direction:column;gap:12px;text-align:left"><h3>How much time a day?</h3>
+        <div class="goalopts">${E.GOALS.map((g) => `<button class="goalopt" data-goal="${g.xp}" aria-pressed="${S.goal === g.xp}">${g.label}<small>${g.sub}</small></button>`).join("")}</div></div>` : ""}
       ${star ? starCard() : ""}
     </div>`, footerBtn("Continue", "gold"));
+    if (firstEver) document.querySelectorAll(".results [data-goal]").forEach((b) => b.addEventListener("click", () => {
+      const from = S.goal; S.goal = +b.dataset.goal; save();
+      if (from !== S.goal) track("goal_changed", { from_xp: from, to_xp: S.goal, where: "first_lesson" });
+      document.querySelectorAll(".results [data-goal]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    }));
     $(".progress > i") && ($(".progress > i").style.width = "100%");
     $("#next").addEventListener("click", closeRun);
     $("#next").focus();
