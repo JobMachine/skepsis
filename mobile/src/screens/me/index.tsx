@@ -93,7 +93,7 @@ export function Me() {
         <Row icon="gearshape.fill" label="Settings" sub="Goal, sounds, reminders, data" onPress={() => router.push("/me/settings")} />
         <Row icon="lock.shield.fill" label="Your data" sub="What stays on your phone (everything)" onPress={() => router.push("/privacy")} />
         <Row icon="star.fill" color={c.gold} label="Star Skepsis on GitHub" sub="Free and open source. A star helps others find it." onPress={() => { track("github_star_clicked", { where: "me" }); Linking.openURL(REPO); }} />
-        <Row icon="sparkles" label="Learn with your AI agent" sub="The same lessons as an MCP server for Claude or Cursor" onPress={() => { track("mcp_link_clicked"); Linking.openURL(`${REPO}/tree/main/mcp`); }} />
+        <Row icon="sparkles" label="Learn with your AI agent" sub="Use the same lessons with AI tools" onPress={() => { track("mcp_link_clicked"); Linking.openURL(`${REPO}/tree/main/mcp`); }} />
         <Row icon="exclamationmark.bubble.fill" label="Suggest a word or fix one" sub="Corrections with a source are very welcome" onPress={() => Linking.openURL(`${REPO}/issues/new`)} />
       </Card>
     </ScrollView>

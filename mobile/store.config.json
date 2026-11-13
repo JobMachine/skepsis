@@ -10,8 +10,8 @@
       "en-US": {
         "title": "Skepsis: Learn Greek Roots",
         "subtitle": "Y'all already speak Greek",
-        "promoText": "Telephone, democracy, Achilles' heel: the Greek hiding in everyday English, in 3-minute lessons. Free forever, no ads.",
-        "description": "Y'all already speak Greek. Skepsis shows you where.\n\nTelephone, photograph, democracy, kleptomania, Achilles' heel, a Trojan horse: English is full of Greek. Skepsis teaches the roots, myths and big ideas behind those words in short, playful lessons, so you can decode words you've never seen.\n\nHOW IT WORKS\n- 3-minute lessons. Guess first, then learn: guessing before you're told helps it stick.\n- Learn a root with two words, then decode a third on your own.\n- Build words from their pieces, match pairs, and play \"Is it Greek?\" (rodeo is Spanish; butter is secretly Greek).\n- Spaced review brings words back after 1, 3, 7, 14 and 30 days.\n- Rodeo: a speed round with 8 seconds per question. One miss bucks you off.\n\nWHAT YOU'LL LEARN\n- Everyday roots: tele, phon, graph, photo, auto\n- Size and number: mega, micro, poly, mono\n- Medicine: cardio, derm, -itis\n- Power and people: democracy, -cracy, polis\n- Myths: Nike, Achilles' heel, the Trojan horse, mentor\n- Persuasion: ethos, pathos, logos, kairos, hubris\n- Stoic ideas: the dichotomy of control, eudaimonia\n\nKEEP GOING\nStreaks (weekends never break them, plus freezes), daily quests, badges, and drachmas to spend on hats for Homer the armadillo. No hearts, no lives, no punishment.\n\nFREE FOREVER, OPEN SOURCE\nSkepsis is free and always will be. No ads, no account, no in-app purchases. The code is open (MIT) at github.com/ionpetro/skepsis. Your progress stays on your phone. The only thing we collect is anonymous usage data (with PostHog) to make lessons better, and you can turn it off in Settings.",
+        "promoText": "Telephone, democracy, Achilles' heel: the Greek hiding in everyday English, in 3-minute lessons. Free, no ads, no account.",
+        "description": "Y'all already speak Greek. Skepsis shows you where.\n\nTelephone, photograph, democracy, kleptomania, Achilles' heel, a Trojan horse: English is full of Greek. Skepsis teaches the roots, myths and big ideas behind those words in short, playful lessons, so you can decode words you've never seen.\n\nHOW IT WORKS\n- 3-minute lessons. Guess first, then learn: guessing before you're told helps it stick.\n- Learn a root with two words, then decode a third on your own.\n- Build words from their pieces, match pairs, and play \"Is it Greek?\" (rodeo is Spanish; butter is secretly Greek).\n- Spaced review brings words back after 1, 3, 7, 14 and 30 days.\n- Rodeo: a speed round with 8 seconds per question. One miss bucks you off.\n\nWHAT YOU'LL LEARN\n- Everyday roots: tele, phon, graph, photo, auto\n- Size and number: mega, micro, poly, mono\n- Medicine: cardio, derm, -itis\n- Power and people: democracy, -cracy, polis\n- Myths: Nike, Achilles' heel, the Trojan horse, mentor\n- Persuasion: ethos, pathos, logos, kairos, hubris\n- Stoic ideas: the dichotomy of control, eudaimonia\n\nKEEP GOING\nStreaks (weekends never break them, plus freezes), daily quests, badges, and drachmas to spend on hats for Homer the armadillo. No hearts, no lives, no punishment.\n\nFREE AND OPEN SOURCE\nSkepsis is free. No ads, no account, no in-app purchases. The code is open (MIT) at github.com/ionpetro/skepsis. Your progress stays on your phone. The only thing we collect is anonymous usage data (with PostHog) to make lessons better, and you can turn it off in Settings.",
         "keywords": [
           "greek",
           "etymology",
@@ -21,7 +21,7 @@
           "english",
           "myths",
           "stoic",
-          "SAT",
+          "mythology",
           "learn",
           "language",
           "quiz"
@@ -35,8 +35,7 @@
             "./store/screenshots/en-US/01-roots-everywhere.png",
             "./store/screenshots/en-US/02-three-minute-lessons.png",
             "./store/screenshots/en-US/03-rodeo-speed-round.png",
-            "./store/screenshots/en-US/04-every-word-has-a-story.png",
-            "./store/screenshots/en-US/05-free-open-source.png"
+            "./store/screenshots/en-US/04-every-word-has-a-story.png"
           ]
         }
       }
@@ -79,7 +78,7 @@
       "email": "ionpetro@gmail.com",
       "phone": "REPLACE_WITH_PHONE",
       "demoRequired": false,
-      "notes": "No login or account. Open the app and tap \"Start lesson 1\" on the welcome screen. After the first lesson the app asks once whether to set a daily reminder. Everything is free: no in-app purchases, no ads. Daily reminders are local notifications scheduled on the device (no push server). Anonymous usage analytics (PostHog) can be turned off in Me > Settings. The app is open source: https://github.com/ionpetro/skepsis"
+      "notes": "1. SCREEN RECORDING\nA screen recording captured on an iPhone 16 Pro Max running the latest iOS is attached to this submission (App Review Information > Attachment). It starts from launching the app and shows the typical flow: welcome screen, lesson 1, the reminder prompt, the Learn / Quests / Words / Me tabs, Rodeo, the shop, and Me > Settings (export data, erase all progress, analytics toggle). The app has no account registration or login, no user-generated content, and no paid content, so none of those flows exist.\n\n2. PURPOSE AND AUDIENCE\nSkepsis teaches the Greek roots hidden inside everyday English words through short 2-3 minute lessons, guided by a mascot named Homer. Learning a root like \"graph\" or \"phobia\" lets people decode hundreds of unfamiliar words. It is for teens and adults who want a bigger vocabulary, students preparing for tests like the SAT, and anyone curious about where English words come from. Everything is free.\n\n3. HOW TO USE THE APP\nNo login, account or demo credentials are needed. Launch the app and tap \"Start lesson 1\" on the welcome screen. After the first lesson the app asks once whether to set a daily reminder (optional). Main features:\n- Learn tab: the course path of lessons (guess, multiple choice, decode, build from tiles, match pairs, Greek-or-not) and the root of the day.\n- Quests tab: three daily quests that earn drachmas, plus a bonus treasure chest.\n- Words tab: a searchable list of every root and word in the course, showing which ones are learned. Tap one for details. Also Huddle slides for each unit.\n- Rodeo: a timed quick-fire quiz (8 seconds per question).\n- Me tab: streak, progress and Settings. In Settings: \"Export my data\", \"Erase all progress\", and the \"Share anonymous usage\" toggle.\nThe shop sells streak freezes and hats for the mascot using \"drachmas\", a currency earned only by finishing lessons. Drachmas cannot be bought with money.\n\n4. EXTERNAL SERVICES\n- PostHog (analytics): anonymous usage events with a random install ID, no account, no tracking, GeoIP off. Users can turn it off in Me > Settings.\nThat is the only network service. There is no backend, no authentication provider, no payment processor and no AI service. Progress is stored on the device (SQLite). Daily reminders are local notifications scheduled on the device (no push server). Sharing a word uses the standard iOS share sheet.\n\n5. REGIONAL DIFFERENCES\nNone. The app works the same in all regions. Content is in English.\n\n6. REGULATED INDUSTRY / THIRD-PARTY MATERIAL\nNot applicable. Skepsis is not in a regulated industry and contains no protected third-party material. All lesson content, art and sounds are original. The app is open source: https://github.com/ionpetro/skepsis"
     }
   }
 }

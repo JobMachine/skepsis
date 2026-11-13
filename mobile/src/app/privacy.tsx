@@ -42,6 +42,9 @@ export default function Privacy() {
       <Card onPress={() => Linking.openURL(`${REPO}/blob/main/mobile/src/lib/analytics.ts`)}>
         <Line icon="chevron.left.forwardslash.chevron.right">Skepsis is open source. Everything that leaves your phone is in one short file: mobile/src/lib/analytics.ts. Tap to read it on GitHub.</Line>
       </Card>
+      <Card onPress={() => Linking.openURL(`${REPO}/blob/main/mobile/PRIVACY.md`)}>
+        <Line icon="doc.text.fill">Read the full privacy policy</Line>
+      </Card>
       <T w="semibold" size={12} color={c.muted} style={{ textAlign: "center" }}>Questions? Open an issue on GitHub.</T>
     </ScrollView>
   );
