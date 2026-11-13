@@ -54,7 +54,12 @@
           "imageWidth": 300
         }
       ],
-      "expo-audio",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false
+        }
+      ],
       "expo-sqlite",
       [
         "expo-notifications",

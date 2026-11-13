@@ -388,6 +388,8 @@ export function buildSite(appMarkup, outDir) {
   const mdHeaders = { "Content-Type": "text/markdown; charset=utf-8", Vary: "Accept" };
   w("vercel.json", JSON.stringify({
     routes: [
+      // Old Vercel addresses of this project forward to the real domain, so only tryskepsis.com is ever shown.
+      ...["skepsis-psi.vercel.app", "skepsis-ion-petropoulos-projects.vercel.app"].map((host) => ({ src: "/(.*)", has: [{ type: "host", value: host }], status: 308, headers: { Location: `${SITE}/$1` } })),
       { src: "/(.*)", headers: { "X-Content-Type-Options": "nosniff", "Referrer-Policy": "strict-origin-when-cross-origin", "Permissions-Policy": "camera=(), microphone=(), geolocation=()", Vary: "Accept" }, continue: true },
       { src: "/(.*)\\.(png|svg|webmanifest|mp4)", headers: { "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800" }, continue: true },
       { src: "/index\\.html", status: 308, headers: { Location: "/" } },

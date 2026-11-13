@@ -79,7 +79,7 @@
       "email": "ionpetro@gmail.com",
       "phone": "REPLACE_WITH_PHONE",
       "demoRequired": false,
-      "notes": "No login or account. Open the app, pick a daily goal, and tap the first lesson. Everything is free: no in-app purchases, no ads. Daily reminders are local notifications scheduled on the device (no push server). Anonymous usage analytics (PostHog) can be turned off in Me > Settings. The app is open source: https://github.com/ionpetro/skepsis"
+      "notes": "No login or account. Open the app and tap \"Start lesson 1\" on the welcome screen. After the first lesson the app asks once whether to set a daily reminder. Everything is free: no in-app purchases, no ads. Daily reminders are local notifications scheduled on the device (no push server). Anonymous usage analytics (PostHog) can be turned off in Me > Settings. The app is open source: https://github.com/ionpetro/skepsis"
     }
   }
 }

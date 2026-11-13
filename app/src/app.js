@@ -415,6 +415,10 @@
   }
 
   function render() {
+    // Public site: no welcome screen. New visitors land on the Learn tab, which shows a short pitch
+    // and a "Start lesson 1" button (Nov 2026: the one-button welcome screen still lost ~9 in 10
+    // new visitors, most within 3 seconds). The claude.ai version keeps it for the team-board opt-in.
+    if (!S.onboarded && !IN_CLAUDE) { S.onboarded = true; save(); track("onboarding_completed", { goal_xp: S.goal, auto: true }); }
     if (!S.onboarded) { app().innerHTML = topbar() + onboarding(); bindOnboarding(); return; }
     const body = { learn: learnView, agora: agoraView, board: boardView, teach: teachView, me: meView }[ui.tab]();
     app().innerHTML = topbar() + `<main class="view">${body}${siteNote(ui.tab !== "learn")}</main>` + tabbar();
@@ -552,6 +556,15 @@
     const learned = Object.keys(S.items).length;
     const rod = rootOfDay();
     const greet = todayXp >= S.goal ? "Daily goal done. Smarter than a tree full of owls." : S.lastDay === t ? "Good work today. A little more hits your goal." : pick(["Howdy! Ready for three minutes of Greek?", "Saddle up, partner. One lesson keeps the streak alive.", "Fixin' to learn some Greek?"]);
+    const fresh = !Object.keys(S.done).length && !S.xp;
+    if (fresh && next) {
+      // First visit: one pitch line and one button, then the rest of the app below to browse.
+      return `
+      <section class="hero">${mascot("cheer")}<div class="bubble">Y'all already speak a little Greek: telephone, Metroplex, astronaut. Three minutes a day and you'll see it everywhere.</div></section>
+      <button class="btn block" data-start="${next.id}">Start lesson 1 · 2 min</button>
+      <p class="muted" style="text-align:center;font-size:13px;font-weight:700;margin-top:-8px">No sign-up. No hearts, no penalties.</p>
+      ${learnRest(learned, due, rod)}`;
+    }
     return `
       <section class="hero">${mascot(todayXp >= S.goal ? "cheer" : "happy")}<div class="bubble">${esc(greet)}</div></section>
       <section class="card goalring">
@@ -560,6 +573,11 @@
         ${next ? `<button class="btn" data-start="${next.id}">${Object.keys(S.done).length ? "Continue" : "Start"}</button>` : ""}
       </section>
       ${Object.keys(S.done).length ? focusPicker() : ""}
+      ${learnRest(learned, due, rod)}`;
+  }
+  /** The part of the Learn tab under the goal card: practice and rodeo tiles, root of the day, trail. */
+  function learnRest(learned, due, rod) {
+    return `
       <section class="quick">
         <button class="tile" data-act="practice" ${learned < 3 ? "disabled" : ""}><span style="color:var(--olive)">${I.redo}</span><b>Practice</b><span>${learned < 3 ? "Unlocks after lesson 1" : due ? `${due} due for review` : "Strengthen weak spots"}</span></button>
         <button class="tile" data-act="rodeo"><span style="color:var(--flame)">${I.shoe}</span><b>Rodeo</b><span>8 seconds a question · best ${S.rodeoBest}</span></button>

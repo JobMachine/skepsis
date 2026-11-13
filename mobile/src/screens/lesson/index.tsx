@@ -14,6 +14,7 @@ import { sfx } from "@/lib/feedback";
 import { finishRun, maybeAskReview, type Mode, type Outcome } from "@/lib/progress";
 import { getState, update } from "@/lib/store";
 import { useTheme } from "@/theme";
+import { ReminderAsk } from "@/screens/onboarding/reminder-ask";
 import { Results, StreakCelebration } from "./celebrate";
 import { TopBar } from "./chrome";
 import { FeedbackPanel } from "./feedback-panel";
@@ -40,7 +41,7 @@ export function LessonRunner({ mode, nodeId, auto }: { mode: Mode; nodeId?: stri
   const [steps, setSteps] = useState<Step[]>(() => build(mode, nodeId));
   const [i, setI] = useState(0);
   const [fb, setFb] = useState<{ ok: boolean; neutral?: boolean; title: string } | null>(null);
-  const [phase, setPhase] = useState<"run" | "streak" | "results">("run");
+  const [phase, setPhase] = useState<"run" | "streak" | "results" | "remind">("run");
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [secs, setSecs] = useState(0);
   const [combo, setCombo] = useState(0);
@@ -123,7 +124,12 @@ export function LessonRunner({ mode, nodeId, auto }: { mode: Mode; nodeId?: stri
   if (phase === "streak" && outcome) return <StreakCelebration o={outcome} onNext={() => setPhase("results")} />;
   if (phase === "results" && outcome) {
     const title = outcome.perfect ? "Flawless!" : mode === "practice" ? "Practice done!" : mode === "roundup" ? "Unit complete!" : "Lesson complete!";
-    return <Results o={outcome} title={title} seconds={secs} onNext={() => { router.back(); maybeAskReview(); }} />;
+    // After the first finished lesson, ask once when to send a reminder (skipped if already on).
+    const askRemind = () => { const x = getState(); return !x.remindAsked && !x.reminders.on && x.lessonsFinished >= 1; };
+    return <Results o={outcome} title={title} seconds={secs} onNext={() => { if (askRemind()) { setPhase("remind"); return; } router.back(); maybeAskReview(); }} />;
+  }
+  if (phase === "remind") {
+    return <ReminderAsk onDone={() => router.back()} />;
   }
 
   const isIntro = step.type === "intro" || step.type === "intro-origin";

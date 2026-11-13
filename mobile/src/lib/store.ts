@@ -23,6 +23,8 @@ export type AppState = EngineState & {
   installId: string;
   installedAt: string;
   reviewAsked: boolean;
+  /** The after-lesson-1 reminder question was shown. */
+  remindAsked: boolean;
   lessonsFinished: number;
 };
 
@@ -42,6 +44,7 @@ function fresh(): AppState {
     installId: randomUUID(),
     installedAt: E.dayKey(),
     reviewAsked: false,
+    remindAsked: false,
     lessonsFinished: 0,
   };
 }
