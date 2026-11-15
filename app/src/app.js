@@ -19,7 +19,7 @@
 
   // ---------- iPhone app ----------
   /** The iPhone app (live on the App Store 2026-11-14). Shown on the public site to iPhone/iPad visitors only. */
-  const APP_STORE_URL = "https://apps.apple.com/us/app/skepsis-learn-greek-roots/id6834477213";
+  const APP_STORE_URL = "https://apps.apple.com/app/id6834477213";
   /** iPadOS Safari reports itself as a Mac, so a touch screen on "Mac" counts as iOS too. */
   const IS_IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   /** Every App Store link carries data-appstore="<where>"; one listener counts the clicks (the site footer lives outside #app). */
@@ -30,9 +30,10 @@
   /** Learn-tab card: "Get the iPhone app", for iOS visitors on the public site. */
   function appCard(where) {
     if (IN_CLAUDE || !IS_IOS) return "";
-    return `<a class="card appcard" href="${APP_STORE_URL}" data-appstore="${where}" rel="noopener">
-      <div style="flex:1;min-width:0"><b>Skepsis is on the App Store</b><span class="muted">Free iPhone app. Daily reminders, works offline.</span></div>
-      <span class="btn small">Get</span></a>`;
+    return `<a class="appcard" href="${APP_STORE_URL}" data-appstore="${where}" rel="noopener">
+      <img src="/apple-touch-icon.png" alt="" width="56" height="56">
+      <div style="flex:1;min-width:0"><span class="eyebrow">New on the App Store</span><b>Get the free iPhone app</b><span class="sub">Daily reminders. Works offline.</span></div>
+      <span class="btn gold">Get</span></a>`;
   }
 
   // ---------- sister apps ----------

@@ -24,9 +24,9 @@ const FAMILY = [
 const SISTERS = FAMILY.filter((a) => a.id !== "skepsis");
 const sisterHref = (a) => `${a.url}/?utm_source=skepsis&amp;utm_medium=sister_link`;
 const NAME = "Skepsis";
-/** iPhone app on the App Store (ASC app id 6834477213, live 2026-11-14). The apple-itunes-app meta makes iOS Safari show its "Get" banner. */
+/** iPhone app on the App Store (ASC app id 6834477213, live 2026-11-14, all countries; the link has no country so Apple opens the visitor's own store). The apple-itunes-app meta makes iOS Safari show its "Get" banner. */
 const APP_STORE_ID = "6834477213";
-const APP_STORE_URL = `https://apps.apple.com/us/app/skepsis-learn-greek-roots/id${APP_STORE_ID}`;
+const APP_STORE_URL = `https://apps.apple.com/app/id${APP_STORE_ID}`;
 const TAGLINE = "Learn Greek roots in 3 minutes a day";
 const DESC = "A free, open-source game that teaches the Greek roots, myths and ideas hiding in everyday English (tele, photo, hubris, kudos) in 3-minute lessons, with Texas examples.";
 const KEYWORDS = "Greek roots app, learn Greek roots, Greek roots in English, etymology game, vocabulary builder, Greek myths in English";
