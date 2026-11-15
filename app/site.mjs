@@ -24,6 +24,9 @@ const FAMILY = [
 const SISTERS = FAMILY.filter((a) => a.id !== "skepsis");
 const sisterHref = (a) => `${a.url}/?utm_source=skepsis&amp;utm_medium=sister_link`;
 const NAME = "Skepsis";
+/** iPhone app on the App Store (ASC app id 6834477213, live 2026-11-14). The apple-itunes-app meta makes iOS Safari show its "Get" banner. */
+const APP_STORE_ID = "6834477213";
+const APP_STORE_URL = `https://apps.apple.com/us/app/skepsis-learn-greek-roots/id${APP_STORE_ID}`;
 const TAGLINE = "Learn Greek roots in 3 minutes a day";
 const DESC = "A free, open-source game that teaches the Greek roots, myths and ideas hiding in everyday English (tele, photo, hubris, kudos) in 3-minute lessons, with Texas examples.";
 const KEYWORDS = "Greek roots app, learn Greek roots, Greek roots in English, etymology game, vocabulary builder, Greek myths in English";
@@ -89,6 +92,7 @@ function head({ title, desc, path, type = "website", jsonld = [], noindex = fals
   const kw = keywords ? `<meta name="keywords" content="${esc(keywords)}">\n` : "";
   const articleMeta = type === "article" ? '<meta property="article:section" content="Etymology">\n' : "";
   return `<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
 <meta name="author" content="${esc(AUTHOR)}">
@@ -121,7 +125,7 @@ function nav() {
   return `<nav class="top" aria-label="Site"><a class="brand" href="/">Skepsis</a><a href="/words">All words</a><a href="/about">About</a><a href="/contact">Contact</a><a href="${REPO}">GitHub</a></nav>`;
 }
 function foot() {
-  return `<footer><p><b>${NAME} is free and always will be. The code is open (MIT): <a href="${REPO}">GitHub</a>.</b> Made by <a href="${AUTHOR_URL}">${AUTHOR}</a>. <a href="/privacy">Privacy</a> · <a href="/contact">Contact</a>. Etymologies checked against Etymonline and Merriam-Webster. ${POSTHOG_KEY ? "The only thing we do is measure how it's used with PostHog, so we can make it better. No account, no ads; session recordings hide anything you type. " : "No account, no ads. "}<a href="${REPO}">Source on GitHub</a> (a star helps others find it) · <a href="${REPO}/tree/main/mcp">Learn from your AI agent (MCP)</a> · More free, open-source apps like this: ${SISTERS.map((a) => `<a href="${sisterHref(a)}">${a.name}</a> (${a.en}; <a href="${a.repo}" target="_blank" rel="noopener noreferrer" aria-label="${a.name} on GitHub">GitHub</a>)`).join(" · ")}</p></footer>`;
+  return `<footer><p><b>${NAME} is free and always will be. The code is open (MIT): <a href="${REPO}">GitHub</a>.</b> <a href="${APP_STORE_URL}">Get the iPhone app</a>. Made by <a href="${AUTHOR_URL}">${AUTHOR}</a>. <a href="/privacy">Privacy</a> · <a href="/contact">Contact</a>. Etymologies checked against Etymonline and Merriam-Webster. ${POSTHOG_KEY ? "The only thing we do is measure how it's used with PostHog, so we can make it better. No account, no ads; session recordings hide anything you type. " : "No account, no ads. "}<a href="${REPO}">Source on GitHub</a> (a star helps others find it) · <a href="${REPO}/tree/main/mcp">Learn from your AI agent (MCP)</a> · More free, open-source apps like this: ${SISTERS.map((a) => `<a href="${sisterHref(a)}">${a.name}</a> (${a.en}; <a href="${a.repo}" target="_blank" rel="noopener noreferrer" aria-label="${a.name} on GitHub">GitHub</a>)`).join(" · ")}</p></footer>`;
 }
 function page({ title, desc, path, body, jsonld, type, noindex = false, keywords = "" }) {
   return `<!doctype html><html lang="en"><head>${head({ title, desc, path, jsonld, type, noindex, keywords })}<style>${PAGE_CSS}</style></head><body><div class="wrap">${nav()}${body}${foot()}</div></body></html>`;
@@ -269,7 +273,7 @@ function appPage(appMarkup, all) {
 <ul>${COURSE.units.map((u) => `<li><b>${esc(u.title)}</b>: ${esc(u.blurb)} (${all.filter((p) => p.unit.id === u.id).slice(0, 4).map((p) => `<a href="/words/${p.slug}">${esc(p.it.kind === "origin" ? p.it.w : p.h1)}</a>`).join(", ")})</li>`).join("")}</ul>
 <h2>Who it is for</h2><p>Anyone who wants a bigger vocabulary, students preparing for the SAT, GRE or medical and science courses, teachers looking for a quick warm-up, and the curious. It also runs inside AI agents like Claude and Cursor through its MCP server.</p>
 <p><a href="/words">Browse all ${all.length} word pages (${roots + ideas} roots and ideas, ${all.length - roots - ideas} "Is it Greek?" words)</a> · <a href="/about">About Skepsis</a> · <a href="${REPO}">Open source on GitHub</a></p></div>`;
-  const footer = `<footer class="site-foot" aria-label="More">${PH_EMBED}<a href="/words">All ${all.length} words</a><a href="/about">About</a><a href="${REPO}">Open source</a><a href="${REPO}/tree/main/mcp">Use with your AI agent</a>${SISTERS.map((a) => `<a href="${sisterHref(a)}">Sister app: ${a.name}</a> <a href="${a.repo}" target="_blank" rel="noopener noreferrer" aria-label="${a.name} on GitHub">GitHub</a>`).join("")}<a href="${AUTHOR_URL}">Made by ${AUTHOR}</a></footer>`;
+  const footer = `<footer class="site-foot" aria-label="More">${PH_EMBED}<a href="${APP_STORE_URL}" data-appstore="site_footer">Get the iPhone app</a><a href="/words">All ${all.length} words</a><a href="/about">About</a><a href="${REPO}">Open source</a><a href="${REPO}/tree/main/mcp">Use with your AI agent</a>${SISTERS.map((a) => `<a href="${sisterHref(a)}">Sister app: ${a.name}</a> <a href="${a.repo}" target="_blank" rel="noopener noreferrer" aria-label="${a.name} on GitHub">GitHub</a>`).join("")}<a href="${AUTHOR_URL}">Made by ${AUTHOR}</a></footer>`;
   return `<!doctype html><html lang="en"><head>${head({ title: `${NAME}: ${TAGLINE}`, desc: DESC, path: "/", jsonld, keywords: KEYWORDS })}
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}
 .site-foot{max-width:560px;margin:-8px auto 0;display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:center;font:700 13px/1.4 Nunito,system-ui,sans-serif;padding:0 max(16px,env(safe-area-inset-right,0px)) calc(96px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}

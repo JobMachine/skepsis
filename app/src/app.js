@@ -17,6 +17,24 @@
     try { if (window.posthog && typeof window.posthog.capture === "function") window.posthog.capture(event, props); } catch { /* analytics must never break the app */ }
   }
 
+  // ---------- iPhone app ----------
+  /** The iPhone app (live on the App Store 2026-11-14). Shown on the public site to iPhone/iPad visitors only. */
+  const APP_STORE_URL = "https://apps.apple.com/us/app/skepsis-learn-greek-roots/id6834477213";
+  /** iPadOS Safari reports itself as a Mac, so a touch screen on "Mac" counts as iOS too. */
+  const IS_IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  /** Every App Store link carries data-appstore="<where>"; one listener counts the clicks (the site footer lives outside #app). */
+  document.addEventListener("click", (e) => {
+    const a = e.target && e.target.closest && e.target.closest("[data-appstore]");
+    if (a) track("app_store_clicked", { where: a.dataset.appstore, ios: IS_IOS });
+  });
+  /** Learn-tab card: "Get the iPhone app", for iOS visitors on the public site. */
+  function appCard(where) {
+    if (IN_CLAUDE || !IS_IOS) return "";
+    return `<a class="card appcard" href="${APP_STORE_URL}" data-appstore="${where}" rel="noopener">
+      <div style="flex:1;min-width:0"><b>Skepsis is on the App Store</b><span class="muted">Free iPhone app. Daily reminders, works offline.</span></div>
+      <span class="btn small">Get</span></a>`;
+  }
+
   // ---------- sister apps ----------
   /** The family of free, open-source learning apps. Keep this list the same in Skepsis, Carpe, Gnothi, Objection, Agora, Oikos and Guanxi (app.js and site.mjs). */
   const FAMILY = [
@@ -563,6 +581,7 @@
       <section class="hero">${mascot("cheer")}<div class="bubble">Y'all already speak a little Greek: telephone, Metroplex, astronaut. Three minutes a day and you'll see it everywhere.</div></section>
       <button class="btn block" data-start="${next.id}">Start lesson 1 · 2 min</button>
       <p class="muted" style="text-align:center;font-size:13px;font-weight:700;margin-top:-8px">No sign-up. No hearts, no penalties.</p>
+      ${appCard("home_new")}
       ${learnRest(learned, due, rod)}`;
     }
     return `
@@ -572,6 +591,7 @@
         <div style="flex:1;min-width:0"><div class="eyebrow">Daily goal</div><h3 class="tnum">${todayXp} / ${S.goal} XP</h3><p class="muted" style="font-weight:700;font-size:14px">${E.isWeekend(t) ? "It's the weekend: optional, streak is safe." : "Weekends never break your streak."}</p></div>
         ${next ? `<button class="btn" data-start="${next.id}">${Object.keys(S.done).length ? "Continue" : "Start"}</button>` : ""}
       </section>
+      ${appCard("home")}
       ${Object.keys(S.done).length ? focusPicker() : ""}
       ${learnRest(learned, due, rod)}`;
   }
