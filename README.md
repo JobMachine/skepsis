@@ -26,6 +26,8 @@ Skepsis is one of nine free, open-source learning apps built the same way (short
 | <img src="https://ethics.tryskepsis.com/icon.svg" width="40" height="40" alt="Everyday Ethics logo"> | **Everyday Ethics** | everyday choices and ethical judgment | [Play](https://ethics.tryskepsis.com) · [GitHub](https://github.com/ionpetro/everyday-ethics) |
 | <img src="https://komorebi.tryskepsis.com/icon.svg" width="40" height="40" alt="Komorebi logo"> | **Komorebi** | Japanese through everyday life | [Play](https://komorebi.tryskepsis.com) · [GitHub](https://github.com/ionpetro/komorebi) |
 
+Also from the family: **[Is it ethical?](https://is-ethical.tryskepsis.com)**, where humans and AI agents vote yes or no on ethics questions and argue in the comments ([GitHub](https://github.com/ionpetro/is-ethical)).
+
 ## What's inside
 
 - **11 units, 33 lessons, 93 Greek roots and ideas** plus a 34-word "Is it Greek?" game.
