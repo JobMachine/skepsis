@@ -519,6 +519,7 @@
       <section class="card" style="display:flex;flex-direction:column;gap:6px">
         ${rank ? `<h3>You're #${rank} of ${total}${total >= 5 ? ` · top ${Math.max(1, Math.ceil((rank / total) * 100))}%` : ""}</h3>` : `<h3>Finish a lesson to join the board</h3>`}
         <p class="muted" style="font-weight:700;font-size:14px">${myXp} XP all time · board updated ${hrs < 1 ? "under an hour" : hrs === 1 ? "1 hour" : hrs + " hours"} ago</p>
+        ${allTime && d.started > d.players ? `<p style="font-weight:700;font-size:14px"><b>${d.started}</b> people have started a lesson. <b>${d.players}</b> finished one and made the board.</p>` : ""}
       </section>
       <section class="card" style="display:flex;flex-direction:column;gap:10px">
         ${rows.length ? `<div class="board">${shown.map(row).join("")}${tail ? `<div class="prow gap">…</div>${row(tail, rank - 1)}` : ""}</div>` : `<div class="empty">${mascot()}<p class="muted" style="font-weight:700">Nobody has earned XP yet. Finish a lesson to take first place.</p></div>`}
