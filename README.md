@@ -12,7 +12,7 @@
 
 Skepsis is free and open source (MIT). **If it helps you, please [star the repo](https://github.com/ionpetro/skepsis)**: a star helps other people find it. Corrections and pull requests are welcome.
 
-Skepsis is one of eight free, open-source learning apps built the same way (short daily lessons and spaced review):
+Skepsis is one of nine free, open-source learning apps built the same way (short daily lessons and spaced review):
 
 | | App | What it teaches | Links |
 |:-:|---|---|---|
@@ -24,6 +24,7 @@ Skepsis is one of eight free, open-source learning apps built the same way (shor
 | <img src="https://oikos.tryskepsis.com/icon.svg" width="40" height="40" alt="Oikos logo"> | **Oikos** | economics and incentives | [Play](https://oikos.tryskepsis.com) · [GitHub](https://github.com/ionpetro/oikos) |
 | <img src="https://guanxi.tryskepsis.com/icon.svg" width="40" height="40" alt="Guanxi logo"> | **Guanxi** | Mandarin and local culture | [Play](https://guanxi.tryskepsis.com) · [GitHub](https://github.com/ionpetro/guanxi) |
 | <img src="https://ethics.tryskepsis.com/icon.svg" width="40" height="40" alt="Everyday Ethics logo"> | **Everyday Ethics** | everyday choices and ethical judgment | [Play](https://ethics.tryskepsis.com) · [GitHub](https://github.com/ionpetro/everyday-ethics) |
+| <img src="https://komorebi.tryskepsis.com/icon.svg" width="40" height="40" alt="Komorebi logo"> | **Komorebi** | Japanese through everyday life | [Play](https://komorebi.tryskepsis.com) · [GitHub](https://github.com/ionpetro/komorebi) |
 
 ## What's inside
 
