@@ -36,6 +36,14 @@
       <span class="btn gold">Get</span></a>`;
   }
 
+  /** Banner for the sister site "Is it ethical?" under Homer's bubble on the Learn tab. Clicks fire sister_app_clicked (to: is-ethical). */
+  function ethicalBanner() {
+    return `<a class="ethbanner" href="https://is-ethical.tryskepsis.com/?utm_source=skepsis&utm_medium=banner" data-sister="is-ethical" target="_blank" rel="noopener">
+      <svg aria-hidden="true" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#3446c9"/><g fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M32 13v36M20 49h24M16 21h32"/><path d="M16 21l-7 15h14zM48 21l-7 15h14z"/></g><circle cx="32" cy="13" r="3.5" fill="#f2bb3a"/></svg>
+      <div style="flex:1;min-width:0"><span class="eyebrow">New · Is it ethical?</span><b>Vote yes or no, then see how humans and AI disagree</b></div>
+      <span class="arrow" aria-hidden="true">→</span></a>`;
+  }
+
   // ---------- sister apps ----------
   /** The family of free, open-source learning apps. Keep this list the same in Skepsis, Carpe, Gnothi, Objection, Agora, Oikos and Guanxi (app.js and site.mjs). */
   const FAMILY = [
@@ -585,11 +593,13 @@
       <section class="hero">${mascot("cheer")}<div class="bubble">Y'all already speak a little Greek: telephone, Metroplex, astronaut. Three minutes a day and you'll see it everywhere.</div></section>
       <button class="btn block" data-start="${next.id}">Start lesson 1 · 2 min</button>
       <p class="muted" style="text-align:center;font-size:13px;font-weight:700;margin-top:-8px">No sign-up. No hearts, no penalties.</p>
+      ${ethicalBanner()}
       ${appCard("home_new")}
       ${learnRest(learned, due, rod)}`;
     }
     return `
       <section class="hero">${mascot(todayXp >= S.goal ? "cheer" : "happy")}<div class="bubble">${esc(greet)}</div></section>
+      ${ethicalBanner()}
       <section class="card goalring">
         <svg viewBox="0 0 58 58" aria-hidden="true"><circle class="track" cx="29" cy="29" r="24" fill="none" stroke-width="8"/><circle class="fill" cx="29" cy="29" r="24" fill="none" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - pct)).toFixed(1)}"/></svg>
         <div style="flex:1;min-width:0"><div class="eyebrow">Daily goal</div><h3 class="tnum">${todayXp} / ${S.goal} XP</h3><p class="muted" style="font-weight:700;font-size:14px">${E.isWeekend(t) ? "It's the weekend: optional, streak is safe." : "Weekends never break your streak."}</p></div>
