@@ -205,12 +205,23 @@ test("streak milestones award freezes capped at MAX_FREEZES and preserve bestStr
   assert.equal(s.streak, 21);
   assert.equal(s.freezes, 2, "freezes capped at MAX_FREEZES");
 
-  // Clock skew: backward date resets streak to 1, preserves bestStreak
+  // Clock skew: a date far behind the saved day was a wrong clock. The streak is kept (not reset to 1)
+  // and the saved day re-anchors to today, so the next real day continues the streak.
   const skew = E.touchStreak(s, "2026-10-01");
-  assert.equal(skew.streakUp, true);
-  assert.equal(skew.reset, true);
-  assert.equal(s.streak, 1);
+  assert.equal(skew.streakUp, false);
+  assert.equal(skew.reset, false);
+  assert.equal(s.streak, 21);
+  assert.equal(s.lastDay, "2026-10-01");
   assert.equal(s.bestStreak, 21);
+  E.touchStreak(s, "2026-10-02");
+  assert.equal(s.streak, 22);
+
+  // Travel west: the saved day is tomorrow on this device. It counts as already practiced today.
+  const t = E.freshState(); t.streak = 5; t.lastDay = "2026-11-18";
+  assert.equal(E.liveStreak(t, "2026-11-17"), 5);
+  E.touchStreak(t, "2026-11-17");
+  assert.equal(t.streak, 5);
+  assert.equal(t.lastDay, "2026-11-18");
 });
 
 test("weekly freeze replenishment does not decrease earned freezes", () => {

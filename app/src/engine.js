@@ -91,8 +91,9 @@ const Engine = (() => {
     if (!s.lastDay) {
       s.streak = 1;
     } else if (s.lastDay > today) {
-      s.streak = 1;
-      out.reset = true;
+      // the saved day is ahead of this device's today (travel west, or the clock moved back): keep the streak
+      if (s.lastDay > addDays(today, 1)) s.lastDay = today; // more than a day ahead was a wrong clock: re-anchor
+      return out;
     } else {
       const missed = missedWeekdays(s.lastDay, today);
       if (missed === 0) {
@@ -115,8 +116,8 @@ const Engine = (() => {
 
   /** Streak as it stands today, without recording activity (0 if it has lapsed). */
   function liveStreak(s, today = dayKey()) {
-    if (!s.lastDay || s.lastDay > today) return 0;
-    if (s.lastDay === today) return s.streak;
+    if (!s.lastDay) return 0;
+    if (s.lastDay >= today) return s.streak; // a saved day ahead of the device clock keeps the streak (see touchStreak)
     const missed = missedWeekdays(s.lastDay, today);
     const wk = weekKey(today);
     const freezes = s.freezeWeek !== wk ? Math.max(s.freezes, 1) : s.freezes;
