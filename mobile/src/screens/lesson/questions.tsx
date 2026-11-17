@@ -39,7 +39,7 @@ export function HlWord({ word, root, size = 40 }: { word: string; root?: string;
 }
 
 type OptState = "idle" | "right" | "wrong" | "dim";
-function Option({ label, k, state, onPress, big }: { label: string; k?: number; state: OptState; onPress: () => void; big?: boolean }) {
+export function Option({ label, k, state, onPress, big }: { label: string; k?: number; state: OptState; onPress: () => void; big?: boolean }) {
   const c = useTheme();
   const border = state === "right" ? c.olive : state === "wrong" ? c.clay : c.line;
   const bg = state === "right" ? c.oliveSoft : state === "wrong" ? c.claySoft : c.surface;

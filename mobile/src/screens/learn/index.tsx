@@ -11,9 +11,31 @@ import { track } from "@/lib/analytics";
 import { haptic } from "@/lib/feedback";
 import { startNode, startPractice, startRodeo } from "@/lib/nav";
 import { questStatus } from "@/lib/quests";
-import { useApp } from "@/lib/store";
+import { update, useApp } from "@/lib/store";
 import { useTheme } from "@/theme";
+import { KomorebiLearn } from "@/screens/komorebi/learn";
 import { Trail } from "./trail";
+
+/** Pick the course: Skepsis (Greek roots) or Komorebi (Japanese). */
+function CourseSwitch({ course }: { course: "skepsis" | "komorebi" }) {
+  const c = useTheme();
+  const opts = [{ id: "skepsis", label: "Greek roots", sub: "Skepsis" }, { id: "komorebi", label: "Japanese", sub: "Komorebi" }] as const;
+  return (
+    <View accessibilityRole="tablist" style={{ flexDirection: "row", gap: 6, padding: 4, borderRadius: 14, backgroundColor: c.surface2 }}>
+      {opts.map((o) => {
+        const on = course === o.id;
+        return (
+          <Pressable key={o.id} accessibilityRole="tab" accessibilityState={{ selected: on }} accessibilityLabel={`${o.sub}, ${o.label}`}
+            onPress={() => { if (on) return; haptic.tap(); track("course_switched", { course: o.id }); update((s) => { s.course = o.id; }); }}
+            style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 11, borderCurve: "continuous", backgroundColor: on ? c.surface : "transparent", boxShadow: on ? "0 1px 3px rgba(0,0,0,0.12)" : undefined }}>
+            <T w="black" size={15} color={on ? c.brand : c.muted}>{o.label}</T>
+            <T w="bold" size={11} color={c.muted}>{o.sub}</T>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
 
 /** Same item for everyone on a given day (matches the website). */
 export function rootOfDay(today: string): IndexedItem {
@@ -64,6 +86,8 @@ export function Learn() {
 
   return (
     <ScrollView ref={scroll} contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ padding: 16, gap: 18, paddingBottom: 48 }}>
+      <CourseSwitch course={s.course} />
+      {s.course === "komorebi" ? <KomorebiLearn /> : <>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
         <Mascot mood={met ? "cheer" : "happy"} hat={s.hat} size={84} />
         <Bubble text={greet} />
@@ -114,6 +138,7 @@ export function Learn() {
       <View style={{ alignItems: "center", gap: 8, paddingTop: 8 }}>
         <T w="semibold" size={13} color={c.muted} style={{ textAlign: "center" }}>Skepsis is free and open source (MIT). Your progress never leaves this phone.</T>
       </View>
+      </>}
     </ScrollView>
   );
 }

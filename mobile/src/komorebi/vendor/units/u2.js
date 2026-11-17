@@ -1,0 +1,93 @@
+(function(){
+const general='Original teaching example; standard Japanese';
+const sources={meal:'https://www.irodori.jpf.go.jp/assets/data/starter/pdf/X_L06.pdf',manners:'https://www.japan.travel/en/responsible-travel-guide/japanese-customs-and-etiquette/',diet:'https://faq.japan-travel.jnto.go.jp/en/guide/vegetarian-guide/',pay:'https://www.sapporo.travel/en/info/useful_information/japanese_restaurant/',tip:'https://www.japan.travel/en/plan/tipping-in-japan/'};
+const p=([ja,kana,romaji,meaning])=>({ja,kana,romaji,meaning});
+const d=(speaker,a)=>({speaker,...p(a)});
+const w=(a,distractors,say)=>({kind:'word',...p(a),distractors,say,src:general,status:'general'});
+const s=(a,tiles,distractors,say)=>({kind:'sentence',...p(a),tiles:tiles.map(([ja,romaji])=>({ja,romaji})),distractors:distractors.map(([ja,romaji])=>({ja,romaji})),transfer:false,say,src:general,status:'general'});
+const g=(title,explanation,examples,q,options,answer,why)=>({kind:'grammar',title,explanation,examples:examples.map(p),quiz:{q,options,answer,why},say:explanation,src:general,status:'general'});
+const c=(title,place,body,src,q,options,answer,why)=>({kind:'culture',title,place,body,src,quiz:{q,options,answer,why},say:body,status:'sourced'});
+const q=(title,scene,prompt,options,answer)=>({kind:'scenario',title,scene,q:prompt,options:options.map(([text,why])=>({text,why})),answer,transfer:true,say:'Use the situation and relationship to choose a useful response.',src:general,status:'general'});
+const lesson=(n,title,scene,mission,dialogue,items)=>({id:`u2l${n}`,title,scene,mission,dialogue,items:items.map((item,i)=>({id:`u2-${n}-${i+1}`,...item}))});
+const unit={id:'u2',title:'Café and meals',blurb:'Order something you want, ask useful questions, and enjoy the table.',place:'A café and neighborhood restaurants',focus:'Requests · quantities · ingredients',lessons:[
+lesson(1,'Your first café order','You stop at a small café. The counter menu has coffee, tea, and cake.','Order coffee politely. Then replace coffee with tea, keeping the request pattern.',[
+d('Staff',['ご注文は？','ごちゅうもんは？','Go-chūmon wa?','What would you like to order?']),
+d('You',['コーヒーをお願いします。','コーヒーをおねがいします。','Kōhī o onegaishimasu.','Coffee, please.']),
+d('Staff',['ホットですか？','ホットですか？','Hotto desu ka?','Hot?']),
+d('You',['はい、ホットでお願いします。','はい、ホットでおねがいします。','Hai, hotto de onegaishimasu.','Yes, hot, please.'])],[
+w(['コーヒー','コーヒー','kōhī','Coffee'],['Black tea','Water','Milk'],'Both ー marks lengthen the preceding vowel: kō-hī.'),
+w(['紅茶','こうちゃ','kōcha','Black tea'],['Coffee','Juice','A cake'],'Kōcha is black tea; it is not a general word for every kind of tea.'),
+w(['ホット','ホット','hotto','Hot (for a drink)'],['Iced','Sweet','Large'],'A menu word borrowed into Japanese. Keep the small ッ pause.'),
+w(['アイス','アイス','aisu','Iced (in this drink order)'],['Hot','Without sugar','To take away'],'At this café, a hotto/aisu question asks about drink temperature. In other contexts aisu can refer to ice cream.'),
+s(['コーヒーをお願いします。','コーヒーをおねがいします。','Kōhī o onegaishimasu.','Coffee, please.'],[['コーヒー','kōhī'],['を','o'],['お願いします','onegaishimasu']],[['は','wa']],'Item + o + onegaishimasu is a useful polite ordering pattern. を is pronounced o.'),
+g('Request an item','Use noun + o + onegaishimasu to request an item. Noun + o + kudasai is another common request. In conversation the o is sometimes omitted; we keep it visible while learning.',[['紅茶をお願いします。','こうちゃをおねがいします。','Kōcha o onegaishimasu.','Black tea, please.'],['コーヒーをください。','コーヒーをください。','Kōhī o kudasai.','Coffee, please.']],'Which particle links the item to this request?',['を (o)','から (kara)','も (mo)'],'を (o)','O marks the requested item in this pattern.'),
+c('A menu is a reading opportunity','A café counter','Menus combine scripts: loanwords such as coffee often appear in katakana, while other dishes and drinks use kanji or hiragana. Recognizing a few menu words can help you make your own choice.',sources.meal,'You recognize コーヒー on a menu. What have you recognized?',['A coffee option','A rule that the café only takes cash','The price of every drink'],'A coffee option','Kōhī names the drink. Prices and payment information are separate.'),
+q('The temperature question','You ordered coffee and the staff asks “ホットですか？” (Hotto desu ka? — Hot?). You want hot coffee.','Which reply confirms your choice?',[
+['はい、ホットでお願いします (hai, hotto de onegaishimasu) — Yes, hot, please','This confirms the hot coffee.'],['アイスでお願いします (aisu de onegaishimasu) — Iced, please','That changes the order to iced coffee.'],['紅茶をお願いします (kōcha o onegaishimasu) — Black tea, please','That requests a different drink rather than confirming temperature.']],0)
+]),
+lesson(2,'Ask for what you need','Your soup arrives. You would like water and a spoon, so you get a staff member’s attention.','Ask for water, then ask whether a spoon is available. Begin with sumimasen.',[
+d('You',['すみません。お水をください。','すみません。おみずをください。','Sumimasen. O-mizu o kudasai.','Excuse me. Water, please.']),
+d('Staff',['はい、どうぞ。','はい、どうぞ。','Hai, dōzo.','Here you are.']),
+d('You',['スプーンはありますか？','スプーンはありますか？','Supūn wa arimasu ka?','Do you have a spoon?']),
+d('Staff',['はい、あります。','はい、あります。','Hai, arimasu.','Yes, we do.'])],[
+w(['お水','おみず','o-mizu','Water (polite)'],['Tea','Soup','A bill'],'O-mizu is a polite form of mizu, useful when requesting drinking water.'),
+w(['スプーン','スプーン','supūn','Spoon'],['Fork','Chopsticks','Plate'],'The ー lengthens ū. Ask for the utensil that works for you.'),
+w(['お箸','おはし','o-hashi','Chopsticks'],['A napkin','A spoon','A glass'],'The o- is a polite prefix here. Hashi names chopsticks in this dining context.'),
+w(['ありますか','ありますか','arimasu ka','Do you have it? / Is there one?'],['I have finished','It is delicious','I will order two'],'Use this after naming an object you are looking for.'),
+s(['スプーンはありますか？','スプーンはありますか？','Supūn wa arimasu ka?','Do you have a spoon?'],[['スプーン','supūn'],['は','wa'],['あります','arimasu'],['か','ka']],[['好き','suki']],'Make the object the topic with wa and ask whether it is available with arimasu ka.'),
+g('Ask whether something is available','Noun + wa + arimasu ka asks whether an object is available. Arimasu means it is available; arimasen means it is not. This pattern is for objects here, not people.',[['お箸はありますか？','おはしはありますか？','O-hashi wa arimasu ka?','Do you have chopsticks?'],['スプーンはありません。','スプーンはありません。','Supūn wa arimasen.','We do not have a spoon.']],'A staff member says arimasen. What does that tell you?',['The item is not available','There are two items','The item is hot'],'The item is not available','Arimasen is the polite negative form of arimasu.'),
+c('Utensils are a request, not a test','A restaurant table','Chopsticks are common, and many restaurants can provide other cutlery if you ask. Choose what helps you eat comfortably. Availability depends on the restaurant.',sources.manners,'You would be more comfortable with a spoon. What is a useful next step?',['Ask whether a spoon is available','Assume you must use chopsticks to show respect','Assume every restaurant has every utensil'],'Ask whether a spoon is available','A simple question respects both your needs and what the restaurant can provide.'),
+q('A second glass','Your companion has water, but you do not. You want a glass for yourself, not a different drink.','What would you request?',[
+['紅茶をください (kōcha o kudasai) — Black tea, please','That orders tea.'],['お水をください (o-mizu o kudasai) — Water, please','This names the water you want.'],['お箸はありますか (o-hashi wa arimasu ka) — Do you have chopsticks?','This asks about a utensil, not a drink.']],1)
+]),
+lesson(3,'One order, two people','You and a friend enter a lunch shop. You first tell the staff how many people you are, then order two portions.','Say that your group has two people. Order two curries, distinguishing futari from futatsu.',[
+d('Staff',['何名様ですか？','なんめいさまですか？','Nan-mei-sama desu ka?','How many people?']),
+d('You',['二人です。','ふたりです。','Futari desu.','Two people.']),
+d('You',['カレーを二つお願いします。','カレーをふたつおねがいします。','Karē o futatsu onegaishimasu.','Two curries, please.']),
+d('Staff',['はい、カレーを二つですね。','はい、カレーをふたつですね。','Hai, karē o futatsu desu ne.','All right, two curries.'])],[
+w(['一つ','ひとつ','hitotsu','One item / portion'],['One person','Two items','Three people'],'A general count useful for one menu item. It does not count a person.'),
+w(['二つ','ふたつ','futatsu','Two items / portions'],['Two people','One item','Four items'],'Use futatsu for two portions in this simple order.'),
+w(['一人','ひとり','hitori','One person'],['One item','Two people','One hundred yen'],'Hitori is an irregular people-counting word; learn it as a whole.'),
+w(['二人','ふたり','futari','Two people'],['Two items','Three people','Two hundred yen'],'Futari counts the people in your party, not the dishes.'),
+s(['カレーを二つお願いします。','カレーをふたつおねがいします。','Karē o futatsu onegaishimasu.','Two curries, please.'],[['カレー','karē'],['を','o'],['二つ','futatsu'],['お願いします','onegaishimasu']],[['二人','futari']],'In this request, the quantity follows the item: karē o futatsu.'),
+g('People and portions use different counts','Use hitori/futari for one/two people. Use hitotsu/futatsu for one/two items in these orders. Many Japanese counters depend on what is counted; these forms are not interchangeable.',[['二人です。','ふたりです。','Futari desu.','There are two of us.'],['カレーを一つください。','カレーをひとつください。','Karē o hitotsu kudasai.','One curry, please.']],'The host is asking the size of your group of two. Which word fits?',['二つ (futatsu)','一つ (hitotsu)','二人 (futari)'],'二人 (futari)','The host needs a count of people, not portions.'),
+c('Some meals start with a ticket','A lunch shop entrance','Some restaurants use a meal-ticket machine before you sit down. Others take orders at the table. Read the entrance instructions or ask staff; the ordering system belongs to that shop, not to every restaurant.',sources.meal,'A sign asks you to buy a meal ticket first. What should guide your next step?',['This shop’s instructions','The ordering system you used at a different café','The assumption that all payment happens after eating'],'This shop’s instructions','Restaurant systems vary. The local sign tells you which system applies.'),
+q('Two diners, one shared dessert','You and a friend want a table for two and plan to share one cake.','Which pair of counts fits?',[
+['Hitori for the group; futatsu for the cake','That says one person and two items.'],['Futatsu for the group; futari for the cake','These counts are assigned to the wrong kinds of things.'],['Futari for the group; hitotsu for the cake','Two people are futari; one menu item is hitotsu.']],2)
+]),
+lesson(4,'Ask about ingredients','You avoid meat and fish for dietary reasons. A vegetable dish looks appealing, but you want to ask about its ingredients before ordering.','Ask whether the dish contains meat. Then ask whether the broth uses fish; do not infer ingredients from the dish’s appearance.',[
+d('You',['これに肉は入っていますか？','これににくははいっていますか？','Kore ni niku wa haitte imasu ka?','Does this contain meat?']),
+d('Staff',['肉は入っていません。','にくははいっていません。','Niku wa haitte imasen.','It does not contain meat.']),
+d('You',['だしに魚は入っていますか？','だしにさかなははいっていますか？','Dashi ni sakana wa haitte imasu ka?','Does the broth contain fish?']),
+d('Staff',['確認します。','かくにんします。','Kakunin shimasu.','I will check.'])],[
+w(['肉','にく','niku','Meat'],['Fish','Vegetables','Rice'],'Name the ingredient category you mean rather than relying on a picture.'),
+w(['魚','さかな','sakana','Fish'],['Meat','Egg','Wheat'],'Fish can also appear in stocks and seasonings, not only as a visible piece.'),
+w(['野菜','やさい','yasai','Vegetables'],['Fruit','Meat','Noodles'],'A vegetable dish can still include other ingredients; this word alone does not establish a dietary category.'),
+w(['だし','だし','dashi','Stock / broth base'],['A menu','A spoon','The bill'],'Dashi describes a stock; its ingredients vary. Ask what is in the version being served.'),
+s(['これに肉は入っていますか？','これににくははいっていますか？','Kore ni niku wa haitte imasu ka?','Does this contain meat?'],[['これに','kore ni'],['肉は','niku wa'],['入っています','haitte imasu'],['か','ka']],[['好きです','suki desu']],'Kore ni points to “in this.” The fixed pattern haitte imasu ka asks whether an ingredient is included.'),
+g('Ask what is included','Ingredient + wa + haitte imasu ka asks whether the ingredient is in the dish. Haitte imasen means it is not included. A reply about one ingredient does not answer questions about all other ingredients.',[['魚は入っていますか？','さかなははいっていますか？','Sakana wa haitte imasu ka?','Does it contain fish?'],['肉は入っていません。','にくははいっていません。','Niku wa haitte imasen.','It does not contain meat.']],'The reply says no meat is included. What do you know?',['Every dietary requirement is satisfied','The dish has no meat; other ingredients still need clarification','The dish contains no stock'],'The dish has no meat; other ingredients still need clarification','The answer covers the ingredient you asked about, not every possible ingredient.'),
+c('Look beyond what you can see','A menu with vegetable dishes','Fish-based stock can appear in dishes whose visible ingredients are vegetables. JNTO suggests checking bases and seasonings and clearly explaining dietary needs. Ask about this dish rather than assuming that a familiar label tells the whole story.',sources.diet,'A dish looks like vegetables only. What helps clarify whether it fits your diet?',['Ask about the stock and ingredients','Treat its appearance as proof','Assume removing a garnish changes every ingredient'],'Ask about the stock and ingredients','The invisible ingredients may matter as much as the visible ones.'),
+q('A partial answer','You avoid both meat and fish. Staff confirms that a soup has no meat, but has not checked the stock.','What is the best next question?',[
+['だしに魚は入っていますか (dashi ni sakana wa haitte imasu ka) — Does the stock contain fish?','This asks about the unresolved ingredient.'],['二人です (futari desu) — There are two of us','This gives the party size, not an ingredient question.'],['お会計をお願いします (o-kaikei o onegaishimasu) — The bill, please','That ends the meal before resolving the order.']],0)
+]),
+lesson(5,'Finish the meal','You have finished lunch at a small restaurant. A payment slip is on the table, and the register is near the door.','Ask for the bill, confirm the amount if needed, and thank the staff as you leave.',[
+d('You',['お会計をお願いします。','おかいけいをおねがいします。','O-kaikei o onegaishimasu.','The bill, please.']),
+d('Staff',['レジでお願いします。','レジでおねがいします。','Reji de onegaishimasu.','At the register, please.']),
+d('You',['いくらですか？','いくらですか？','Ikura desu ka?','How much is it?']),
+d('You',['ごちそうさまでした。','ごちそうさまでした。','Gochisōsama deshita.','Thank you for the meal.'])],[
+w(['お会計','おかいけい','o-kaikei','The bill / payment'],['A menu','The entrance','A reservation'],'Use o-kaikei o onegaishimasu when you are ready to settle the bill.'),
+w(['レジ','レジ','reji','Cash register / checkout'],['Kitchen','Platform','Restroom'],'A staff member may direct you here to pay.'),
+w(['いくらですか','いくらですか','ikura desu ka','How much is it?'],['How many people?','Where is it?','What is your name?'],'Ikura asks the price. It does not ask how many items you want.'),
+w(['ごちそうさまでした','ごちそうさまでした','gochisōsama deshita','Thank you for the meal (after eating)'],['Enjoy your meal (before eating)','One more water, please','I would like to order'],'A customary expression after a meal; it can also acknowledge the people who provided it.'),
+s(['お会計をお願いします。','おかいけいをおねがいします。','O-kaikei o onegaishimasu.','The bill, please.'],[['お会計','o-kaikei'],['を','o'],['お願いします','onegaishimasu']],[['コーヒー','kōhī']],'Use the request pattern you know, replacing the ordered item with o-kaikei.'),
+g('Where the action happens: de','Place + de marks the location of an action. Reji de onegaishimasu is a short contextual request to handle payment at the register. The action can be omitted when everyone understands it.',[['レジでお願いします。','レジでおねがいします。','Reji de onegaishimasu.','At the register, please.'],['ここでお願いします。','ここでおねがいします。','Koko de onegaishimasu.','Here, please.']],'In reji de onegaishimasu, what does de identify?',['The number of people','The location of the action','The drink temperature'],'The location of the action','It tells you where to handle the payment in this scene.'),
+c('Follow the payment cue','A restaurant checkout','A bill may be taken to the register, or payment may happen at the table. Follow staff guidance. In ordinary cafés and restaurants, an extra tip is generally not expected; a thank-you is welcome.',sources.pay,'The staff points to the register and asks you to pay there. What fits?',['Take the bill to the register and pay','Assume all restaurants require table payment','Leave an estimated amount and go without checking'],'Take the bill to the register and pay','The staff has explained the payment process for this restaurant.'),
+q('The bill is already on the table','You have finished eating. A staff member says “レジでお願いします” (Reji de onegaishimasu — At the register, please).','What does that mean here?',[
+['Order another drink before paying','The instruction concerns the payment location, not another purchase.'],['Wait until a server takes your card at the table','That contradicts the stated location.'],['Bring the payment slip to the checkout','Reji is the register; this follows the staff’s direction.']],2)
+])],assessment:[
+{id:'u2-check-1',...q('A bakery stop for two','You and a friend are sharing one pastry. Each wants an iced coffee. The cashier asks for your order.','Which count matches the two coffees?',[
+['コーヒーを一つお願いします (kōhī o hitotsu onegaishimasu) — One coffee, please','That gives one coffee, not one for each person.'],['アイスコーヒーを二つお願いします (aisu kōhī o futatsu onegaishimasu) — Two iced coffees, please','Futatsu counts the two drink orders and aisu sets the temperature.'],['二人です (futari desu) — There are two of us','That gives your party size but does not order the drinks.']],1)},
+{id:'u2-check-2',...q('A vegetable noodle bowl','At a new noodle shop, you avoid fish. The menu picture shows only vegetables, and you have not asked about the broth.','What should you do before deciding on the dish?',[
+['Ask 魚は入っていますか (sakana wa haitte imasu ka — Does it contain fish?), including the broth in your explanation.','You ask about the ingredient that matters, including what the photo cannot show.'],['Assume the photo proves the dish has no fish.','The broth may have ingredients that are not visible.'],['Ask いくらですか (ikura desu ka — How much is it?) and treat the price as the answer.','The price does not establish ingredients.']],0)}]};
+if(typeof KOMOREBI_UNITS!=='undefined')KOMOREBI_UNITS.push(unit);if(typeof module!=='undefined')module.exports=unit;
+})();

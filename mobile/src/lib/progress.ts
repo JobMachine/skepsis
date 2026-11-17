@@ -8,10 +8,12 @@ import { questEvent } from "./quests";
 import { reschedule } from "./reminders";
 import { getState, update } from "./store";
 
-export type Mode = "lesson" | "roundup" | "practice" | "rodeo";
+export type Mode = "lesson" | "roundup" | "practice" | "rodeo" | "komorebi" | "komorebi-review";
 
 export type RunSummary = {
   mode: Mode; nodeId?: string; unitId?: string;
+  /** Komorebi only: this run finished the lesson's last sitting. */
+  lessonDone?: boolean;
   scored: number; right: number; misses: number; maxCombo: number; seconds: number; origins: number;
 };
 
@@ -37,6 +39,20 @@ export function finishRun(r: RunSummary): Outcome {
       xp = Math.min(r.right, 20);
       coins = Math.floor(r.right / 2) + (newBest && r.right > 0 ? 5 : 0);
       questEvent(s, "rodeo", r.right);
+    } else if (r.mode === "komorebi" || r.mode === "komorebi-review") {
+      // Same rewards as a Skepsis lesson/practice; Komorebi's own lesson record gets the progress.
+      const review = r.mode === "komorebi-review";
+      xp = (review ? 8 : 10) + (perfect ? 5 : 0) + (r.maxCombo >= 5 ? 2 : 0);
+      coins = 5 + (perfect ? 5 : 0);
+      if (!review && r.nodeId) {
+        const k = s.komorebi;
+        if (!k.done[r.nodeId]) k.sittings[r.nodeId] = (k.sittings[r.nodeId] || 0) + 1;
+        if (r.lessonDone) k.done[r.nodeId] = { perfect, at: t };
+      }
+      if (review) { s.practices += 1; questEvent(s, "practice", 1); }
+      s.lessonsFinished += 1;
+      questEvent(s, "lessons", 1);
+      if (perfect) questEvent(s, "perfect", 1);
     } else {
       xp = { lesson: 10, roundup: 15, practice: 8 }[r.mode] + (perfect ? 5 : 0) + (r.maxCombo >= 5 ? 2 : 0);
       coins = 5 + (perfect ? 5 : 0) + (r.mode === "roundup" ? 10 : 0);
@@ -63,7 +79,7 @@ export function finishRun(r: RunSummary): Outcome {
 
   const s = getState();
   track(r.mode === "rodeo" ? "rodeo_finished" : "lesson_completed", {
-    mode: r.mode, lesson_id: r.nodeId ?? null, unit_id: r.unitId ?? null, accuracy: out.accuracy, perfect, xp: out.xp,
+    mode: r.mode, course: r.mode.startsWith("komorebi") ? "komorebi" : "skepsis", lesson_id: r.nodeId ?? null, unit_id: r.unitId ?? null, accuracy: out.accuracy, perfect, xp: out.xp,
     drachmas: out.drachmas, seconds: r.seconds, max_combo: r.maxCombo, streak: s.streak, used_freeze: out.usedFreeze > 0,
     total_xp: s.xp, learned: Object.keys(s.items).length, rides: r.mode === "rodeo" ? r.right : undefined, new_best: out.newBest,
   });

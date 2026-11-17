@@ -53,6 +53,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false, animation: "fade" }} />
         <Stack.Screen name="lesson" options={{ headerShown: false, presentation: "fullScreenModal", gestureEnabled: false }} />
+        <Stack.Screen name="komorebi" options={{ headerShown: false, presentation: "fullScreenModal", gestureEnabled: false }} />
         <Stack.Screen name="rodeo" options={{ headerShown: false, presentation: "fullScreenModal", gestureEnabled: false }} />
         <Stack.Screen name="huddle/[unit]" options={{ headerShown: false, presentation: "fullScreenModal" }} />
         <Stack.Screen name="streak" options={{ ...sheet, sheetAllowedDetents: [0.75, 1] }} />

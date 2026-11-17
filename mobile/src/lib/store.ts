@@ -6,6 +6,7 @@ import { useSyncExternalStore } from "react";
 import { randomUUID } from "expo-crypto";
 
 import { E, type EngineState } from "@/course";
+import { KE, type KState } from "@/komorebi";
 
 export type Hat = "wreath" | "cowboy" | "helmet" | "grad";
 
@@ -26,6 +27,10 @@ export type AppState = EngineState & {
   /** The after-lesson-1 reminder question was shown. */
   remindAsked: boolean;
   lessonsFinished: number;
+  /** Which course the Learn tab shows. */
+  course: "skepsis" | "komorebi";
+  /** Komorebi (Japanese) progress, in Komorebi's own engine format. XP and streak stay shared above. */
+  komorebi: KState;
 };
 
 const KEY = "skepsis:v1";
@@ -46,13 +51,18 @@ function fresh(): AppState {
     reviewAsked: false,
     remindAsked: false,
     lessonsFinished: 0,
+    course: "skepsis",
+    komorebi: KE.freshState(),
   };
 }
 
 function load(): AppState {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return { ...fresh(), ...JSON.parse(raw) };
+    if (raw) {
+      const saved = JSON.parse(raw);
+      return { ...fresh(), ...saved, komorebi: KE.repairState(saved.komorebi) };
+    }
   } catch {
     // A broken save should never brick the app; start fresh.
   }

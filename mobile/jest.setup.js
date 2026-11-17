@@ -21,3 +21,4 @@ jest.mock("expo-notifications", () => ({
   scheduleNotificationAsync: async () => "id",
   SchedulableTriggerInputTypes: { DATE: "date" },
 }));
+jest.mock("expo-speech", () => ({ speak: () => {}, stop: () => {} }));
