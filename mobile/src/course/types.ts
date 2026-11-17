@@ -66,7 +66,7 @@ export type EngineApi = {
   nextNode(ix: CourseIndex, s: EngineState): PathNode | null;
   isUnlocked(ix: CourseIndex, s: EngineState, nodeId: string): boolean;
   rng(seed: number): () => number; shuffle<T>(a: T[], r: () => number): T[];
-  buildLesson(ix: CourseIndex, s: EngineState, lessonId: string, seed: number): Step[];
+  buildLesson(ix: CourseIndex, s: EngineState, lessonId: string, seed: number, opts?: { short?: boolean }): Step[];
   buildRoundup(ix: CourseIndex, s: EngineState, unitId: string, seed: number): Step[];
   buildPractice(ix: CourseIndex, s: EngineState, seed: number): Step[];
   rodeoQuestion(ix: CourseIndex, s: EngineState, r: () => number): Question;

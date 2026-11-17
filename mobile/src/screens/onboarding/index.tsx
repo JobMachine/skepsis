@@ -1,6 +1,10 @@
-// First run: one welcome screen, one button, straight into lesson 1. The reminder question waits
-// until after the first finished lesson (ReminderAsk); goal and analytics live in Me › Settings.
-// Nov 2026 web data: every extra screen before the first lesson lost most new players.
+// First run: straight into lesson 1, whose first screen is a one-tap warm-up question. The welcome
+// screen below only shows for a moment while the lesson opens (and if opening fails, its button
+// still works). The reminder question waits until after the first finished lesson (ReminderAsk);
+// goal and analytics live in Me › Settings.
+// Nov 2026 data: every screen before the first question lost most new players; half of new
+// website visitors left within 8 seconds.
+import { useEffect } from "react";
 import { ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -18,12 +22,13 @@ export function Onboarding() {
   const c = useTheme();
   const insets = useSafeAreaInsets();
 
-  function start() {
+  function start(auto: boolean) {
     update((x) => { x.onboarded = true; });
-    track("onboarding_completed", { goal_xp: s.goal, analytics: s.analytics, one_screen: true });
+    track("onboarding_completed", { goal_xp: s.goal, analytics: s.analytics, one_screen: true, auto });
     router.replace("/(tabs)/(learn)");
-    setTimeout(() => startNode(E.nextNode(IX, s)), 350);
+    setTimeout(() => startNode(E.nextNode(IX, s), "auto"), 350);
   }
+  useEffect(() => { start(true); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <View style={{ flex: 1, paddingTop: insets.top + 8, paddingBottom: insets.bottom + 12 }}>
@@ -44,7 +49,7 @@ export function Onboarding() {
         </View>
       </ScrollView>
       <View style={{ paddingHorizontal: 16, gap: 10 }}>
-        <Btn label="Start lesson 1 · 2 min" tone="gold" onPress={start} />
+        <Btn label="Start lesson 1 · 2 min" tone="gold" onPress={() => start(false)} />
         <T w="bold" size={12} color={c.muted} style={{ textAlign: "center" }}>
           Your progress stays on this phone.{analyticsAvailable ? " We count anonymous usage to fix hard lessons; turn it off in Me › Settings." : ""}
         </T>

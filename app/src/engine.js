@@ -341,13 +341,24 @@ const Engine = (() => {
   /**
    * A lesson: guess first (pretest) -> each item's intro + quick check -> practice with
    * at least two unseen-word decodes -> a match round -> one or two interleaved review items.
-   * `short` (a brand-new player's first lesson): no guess, no practice round, no review: just
-   * a one-tap warm-up, each item's intro + quick check, then the match round. About 8 screens instead of 13.
+   * `short` (a brand-new player's first lesson): no guess, no practice, no match, no review: a
+   * one-tap warm-up, then intro + quick check for the first two items. 5 screens instead of 13
+   * (Nov 2026 data: of 33 people who saw lesson 1's first screen, 2 reached screen 13).
+   * Items a finished lesson skipped (the short lesson's third item) are taught at the start of
+   * the next regular lesson, so nothing is lost.
    */
+  const SHORT_ITEMS = 2;
   function buildLesson(ix, s, lessonId, seed, { short = false } = {}) {
     const r = rng(seed);
     const lesson = ix.lessons.find((l) => l.id === lessonId);
-    const its = lesson.items.map((x) => ix.items.get(x.id));
+    const own = lesson.items.map((x) => ix.items.get(x.id));
+    // Carry-over: items of finished lessons that were never introduced.
+    // Not into an all-origin ("Is it Greek?") lesson: that one has its own format.
+    const carried = short || own.every((x) => x.kind === "origin") ? [] : ix.lessons
+      .filter((l) => l.id !== lessonId && s.done && s.done[l.id])
+      .flatMap((l) => l.items.map((x) => ix.items.get(x.id)))
+      .filter((it) => it && !(s.items && s.items[it.id]) && it.kind !== "origin");
+    const its = short ? own.slice(0, SHORT_ITEMS) : [...carried, ...own];
     const steps = [];
 
     if (its.every((x) => x.kind === "origin")) {
@@ -366,13 +377,10 @@ const Engine = (() => {
       steps.push({ type: "intro", itemId: it.id });
       steps.push(it.kind === "root" ? qMeaning(ix, it, r) : qMeaning(ix, it, r, "New idea"));
     }
-    if (short) {
-      if (its.length >= 3) steps.push(qMatch(ix, its, r));
-      return steps;
-    }
+    if (short) return steps;
 
     const practice = [];
-    for (const it of its) {
+    for (const it of own) { // carried items get intro + check only, to keep the lesson short
       if (it.kind === "root") {
         practice.push(qDecode(ix, it, 2, r));
         const bi = it.ex.findIndex((e, i) => i < 2 && e[2].length >= 2);
@@ -389,8 +397,8 @@ const Engine = (() => {
     if (its.length >= 3) steps.push(qMatch(ix, its, r));
 
     // Interleave: one or two older items that are due (or weakest).
-    const own = new Set(its.map((x) => x.id));
-    const older = dueItems(s, dayKey()).filter((id) => !own.has(id) && ix.items.has(id)).slice(0, 2);
+    const ownIds = new Set(its.map((x) => x.id));
+    const older = dueItems(s, dayKey()).filter((id) => !ownIds.has(id) && ix.items.has(id)).slice(0, 2);
     for (const id of older) steps.push(qReview(ix, ix.items.get(id), r));
     return steps;
   }

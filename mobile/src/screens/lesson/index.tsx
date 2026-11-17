@@ -11,6 +11,7 @@ import { Mascot } from "@/components/mascot";
 import { Btn, T } from "@/components/ui";
 import { track } from "@/lib/analytics";
 import { sfx } from "@/lib/feedback";
+import { startNode } from "@/lib/nav";
 import { finishRun, maybeAskReview, type Mode, type Outcome } from "@/lib/progress";
 import { getState, update } from "@/lib/store";
 import { useTheme } from "@/theme";
@@ -26,15 +27,18 @@ const GUESS = ["Good guess! Now let's learn it.", "Guessing first helps it stick
 const pick = (a: string[]) => a[Math.floor(Math.random() * a.length)];
 const seed = () => Math.floor(Math.random() * 2 ** 31);
 
+/** A brand-new player's first lesson is the short one (5 screens), same as the website. */
+const isShort = (mode: Mode) => mode === "lesson" && !Object.keys(getState().done).length;
+
 function build(mode: Mode, nodeId?: string): Step[] {
   const s = getState();
   const node = NODES.find((n) => n.id === nodeId);
-  if (mode === "lesson" && node) return E.buildLesson(IX, s, node.id, seed());
+  if (mode === "lesson" && node) return E.buildLesson(IX, s, node.id, seed(), { short: isShort(mode) });
   if (mode === "roundup" && node) return E.buildRoundup(IX, s, node.unitId, seed());
   return E.buildPractice(IX, s, seed());
 }
 
-export function LessonRunner({ mode, nodeId, auto }: { mode: Mode; nodeId?: string; auto?: string }) {
+export function LessonRunner({ mode, nodeId, auto, from }: { mode: Mode; nodeId?: string; auto?: string; from?: string }) {
   const c = useTheme();
   const insets = useSafeAreaInsets();
   const node = NODES.find((n) => n.id === nodeId);
@@ -42,12 +46,14 @@ export function LessonRunner({ mode, nodeId, auto }: { mode: Mode; nodeId?: stri
   const [i, setI] = useState(0);
   const [fb, setFb] = useState<{ ok: boolean; neutral?: boolean; title: string } | null>(null);
   const [phase, setPhase] = useState<"run" | "streak" | "results" | "remind">("run");
+  const [afterRemind, setAfterRemind] = useState<"home" | "next">("home");
+  const [short] = useState(() => isShort(mode));
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [secs, setSecs] = useState(0);
   const [combo, setCombo] = useState(0);
   const st = useRef({ scored: 0, right: 0, misses: 0, combo: 0, maxCombo: 0, origins: 0, requeued: new Set<number>(), start: 0, finished: false });
   const scroll = useRef<ScrollViewInstance>(null);
-  const props = { mode, lesson_id: node?.id ?? null, unit_id: node?.unitId ?? null };
+  const props = { mode, lesson_id: node?.id ?? null, unit_id: node?.unitId ?? null, short_lesson: short, start_from: from ?? "tap" };
 
   useEffect(() => { st.current.start = Date.now(); track("lesson_started", props); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -126,10 +132,16 @@ export function LessonRunner({ mode, nodeId, auto }: { mode: Mode; nodeId?: stri
     const title = outcome.perfect ? "Flawless!" : mode === "practice" ? "Practice done!" : mode === "roundup" ? "Unit complete!" : "Lesson complete!";
     // After the first finished lesson, ask once when to send a reminder (skipped if already on).
     const askRemind = () => { const x = getState(); return !x.remindAsked && !x.reminders.on && x.lessonsFinished >= 1; };
-    return <Results o={outcome} title={title} seconds={secs} onNext={() => { if (askRemind()) { setPhase("remind"); return; } router.back(); maybeAskReview(); }} />;
+    const done = () => { if (askRemind()) { setAfterRemind("home"); setPhase("remind"); return; } router.back(); maybeAskReview(); };
+    // Nov 2026 data: of 15 people who finished lesson 1, 2 ever started lesson 2. Offer it right here.
+    const nextUp = mode === "practice" ? null : E.nextNode(IX, getState());
+    if (!nextUp) return <Results o={outcome} title={title} seconds={secs} onNext={done} />;
+    const goNext = () => { if (askRemind()) { setAfterRemind("next"); setPhase("remind"); return; } startNode(nextUp, "next_lesson"); };
+    return <Results o={outcome} title={title} seconds={secs} primary={`Next lesson · ${nextUp.title}`} onNext={goNext} secondary="Done for now" onSecondary={done} />;
   }
   if (phase === "remind") {
-    return <ReminderAsk onDone={() => router.back()} />;
+    const nextUp = afterRemind === "next" ? E.nextNode(IX, getState()) : null;
+    return <ReminderAsk onDone={() => (nextUp ? startNode(nextUp, "next_lesson") : router.back())} />;
   }
 
   const isIntro = step.type === "intro" || step.type === "intro-origin";

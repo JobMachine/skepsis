@@ -89,8 +89,8 @@ export function Learn() {
       </Card>
 
       <View style={{ flexDirection: "row", gap: 12 }}>
-        <Tile icon="arrow.clockwise" color={c.olive} title="Practice" disabled={learned < 3} onPress={startPractice}
-          sub={learned < 3 ? "Unlocks after lesson 1" : due ? `${due} due for review` : "Strengthen weak spots"} />
+        <Tile icon="arrow.clockwise" color={c.olive} title="Practice" disabled={learned < 2} onPress={startPractice}
+          sub={learned < 2 ? "Unlocks after lesson 1" : due ? `${due} due for review` : "Strengthen weak spots"} />
         <Tile icon="timer" color={c.flame} title="Rodeo" onPress={startRodeo} sub={`8 seconds a question · best ${s.rodeoBest}`} />
       </View>
 

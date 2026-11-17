@@ -14,6 +14,25 @@ describe("course bridge", () => {
     expect(NODES[0].id).toBe("u1l1");
     expect(E.buildLesson(IX, getState(), "u1l1", 1).length).toBeGreaterThan(5);
   });
+
+  it("gives a new player a 5-screen first lesson that opens with a question", () => {
+    const steps = E.buildLesson(IX, getState(), "u1l1", 1, { short: true });
+    expect(steps.length).toBe(5);
+    expect(steps[0].type).toBe("mcq");
+  });
+
+  it("teaches the item the short lesson skipped at the start of the next lesson", () => {
+    const t = E.dayKey();
+    update((s) => {
+      for (const st of E.buildLesson(IX, s, "u1l1", 1, { short: true })) if (st.type === "intro") E.learn(s, st.itemId, t);
+      s.done.u1l1 = { perfect: true, at: t };
+    });
+    const skipped = IX.lessons.find((l) => l.id === "u1l1")!.items.map((x) => x.id).filter((id) => !getState().items[id]);
+    expect(skipped.length).toBeGreaterThan(0);
+    const next = E.buildLesson(IX, getState(), "u1l2", 1);
+    const intros = next.filter((x) => x.type === "intro").map((x) => (x as { itemId: string }).itemId);
+    for (const id of skipped) expect(intros).toContain(id);
+  });
 });
 
 describe("quests", () => {

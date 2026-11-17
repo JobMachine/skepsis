@@ -613,7 +613,7 @@
   function learnRest(learned, due, rod) {
     return `
       <section class="quick">
-        <button class="tile" data-act="practice" ${learned < 3 ? "disabled" : ""}><span style="color:var(--olive)">${I.redo}</span><b>Practice</b><span>${learned < 3 ? "Unlocks after lesson 1" : due ? `${due} due for review` : "Strengthen weak spots"}</span></button>
+        <button class="tile" data-act="practice" ${learned < 2 ? "disabled" : ""}><span style="color:var(--olive)">${I.redo}</span><b>Practice</b><span>${learned < 2 ? "Unlocks after lesson 1" : due ? `${due} due for review` : "Strengthen weak spots"}</span></button>
         <button class="tile" data-act="rodeo"><span style="color:var(--flame)">${I.shoe}</span><b>Rodeo</b><span>8 seconds a question · best ${S.rodeoBest}</span></button>
       </section>
       <section class="card rotd" style="display:flex;flex-direction:column;gap:8px">
@@ -798,7 +798,10 @@
 
   // ---------- lesson runner ----------
   let run = null;
-  function startNode(node) {
+  // Why the next lesson starts: "auto" (first visit), "next_lesson" (button on the finish screen), or a tap.
+  let startFrom = null;
+  function startNode(node, from = null) {
+    startFrom = from;
     if (!node) return;
     if (node.kind === "roundup") startRun("roundup", node);
     else startRun("lesson", node);
@@ -812,13 +815,14 @@
     else if (mode === "roundup") steps = E.buildRoundup(IX, S, node.unitId, sd);
     else steps = E.buildPractice(IX, S, sd);
     if (!steps.length) { toast("Nothing to practice yet"); return; }
-    run = { mode, node, short: mode === "lesson" && short, steps, i: 0, misses: 0, combo: 0, maxCombo: 0, right: 0, scored: 0, requeued: new Set(), answered: false, start: Date.now() };
+    run = { mode, node, short: mode === "lesson" && short, from: startFrom, steps, i: 0, misses: 0, combo: 0, maxCombo: 0, right: 0, scored: 0, requeued: new Set(), answered: false, start: Date.now() };
+    startFrom = null;
     track("lesson_started", runProps());
     ui.overlay = "lesson";
     drawStep();
   }
   function runProps() {
-    return run ? { mode: run.mode, lesson_id: run.node ? run.node.id : null, unit_id: run.node ? run.node.unitId : null, short_lesson: !!run.short } : {};
+    return run ? { mode: run.mode, lesson_id: run.node ? run.node.id : null, unit_id: run.node ? run.node.unitId : null, short_lesson: !!run.short, start_from: run.from || "tap" } : {};
   }
   /** What the player is looking at right now, for step-level events. */
   function stepProps(q) {
@@ -1087,6 +1091,49 @@
     next.focus();
   }
 
+  // ---------- daily reminder (web) ----------
+  // The website can't send notifications without a server, so the reminder is a daily event in the
+  // visitor's own calendar (.ics file, opens Calendar on iPhone). Nothing leaves the browser.
+  const REMIND_TIMES = [["Morning", 8, 0], ["Lunch", 12, 30], ["Evening", 19, 0], ["Before bed", 21, 30]];
+  function reminderCard() {
+    return `<div class="card" style="display:flex;flex-direction:column;gap:12px;text-align:left"><h3>Want a daily nudge?</h3>
+      <p class="muted" style="font-weight:700;font-size:14px;margin:0">People who pick a time keep coming back. Adds a 3-minute event to your calendar.</p>
+      <div class="goalopts">${REMIND_TIMES.map(([l, h, m], i) => `<button class="goalopt" data-remind="${i}" aria-pressed="${i === 2}">${l}<small>${fmtTime(h, m)}</small></button>`).join("")}</div>
+      <button class="btn block" id="remindme">Add to my calendar</button></div>`;
+  }
+  function fmtTime(h, m) { return new Date(2026, 0, 1, h, m).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }); }
+  function bindReminderCard() {
+    let pickI = 2;
+    document.querySelectorAll(".results [data-remind]").forEach((b) => b.addEventListener("click", () => {
+      pickI = +b.dataset.remind;
+      document.querySelectorAll(".results [data-remind]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    }));
+    $("#remindme").addEventListener("click", () => {
+      const [, h, m] = REMIND_TIMES[pickI];
+      downloadIcs(h, m);
+      track("reminders_set", { granted: true, hour: h, where: "first_lesson", via: "calendar" });
+      $("#remindme").textContent = "Added. See you tomorrow!";
+      $("#remindme").disabled = true;
+    });
+  }
+  function downloadIcs(h, m) {
+    const d = new Date(); d.setDate(d.getDate() + 1);
+    const p2 = (n) => String(n).padStart(2, "0");
+    const day = `${d.getFullYear()}${p2(d.getMonth() + 1)}${p2(d.getDate())}`;
+    const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
+    const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Skepsis//Daily reminder//EN", "BEGIN:VEVENT",
+      `UID:skepsis-${Date.now()}@tryskepsis.com`, `DTSTAMP:${stamp}`, `DTSTART:${day}T${p2(h)}${p2(m)}00`, "DURATION:PT5M",
+      "RRULE:FREQ=DAILY", "SUMMARY:Skepsis: 3 minutes of Greek", "URL:https://tryskepsis.com/?utm_source=calendar",
+      "DESCRIPTION:Keep your streak alive: https://tryskepsis.com/?utm_source=calendar",
+      "BEGIN:VALARM", "ACTION:DISPLAY", "TRIGGER:PT0M", "DESCRIPTION:Skepsis time", "END:VALARM",
+      "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
+    a.download = "skepsis-daily.ics";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  }
+
   function finishRun() {
     const t = today();
     const perfect = run.misses === 0;
@@ -1112,6 +1159,7 @@
     const acc = run.scored ? Math.round((run.right / run.scored) * 100) : 100;
     const secs = Math.round((Date.now() - run.start) / 1000);
     const star = starMoment({ perfect, goalHit: prevTodayXp < S.goal && (S.days[t] || 0) >= S.goal });
+    const nextUp = run.mode === "lesson" || run.mode === "roundup" ? E.nextNode(IX, S) : null;
     sfx.done(); confetti();
     const streakLine = !wasActive && st.streakUp ? (st.usedFreeze ? `A freeze saved your streak. ${S.streak} days!` : S.streak > 1 ? `${S.streak}-day streak! ${before === 0 ? "" : "Keep it rolling."}` : "Day 1 of your streak. See you tomorrow.") : `Streak: ${S.streak} days.`;
     shell(`<div class="results">
@@ -1124,18 +1172,20 @@
       </div>
       <p style="font-weight:800">${esc(streakLine)}</p>
       ${fresh.map((b) => `<div class="newbadge">${wreath(b.name[0]).replace("<svg", '<svg width="40" height="40"')}<div>New laurel: ${esc(b.name)}<br><span class="muted">${esc(b.desc)}</span></div></div>`).join("")}
-      ${firstEver ? `<div class="card" style="display:flex;flex-direction:column;gap:12px;text-align:left"><h3>How much time a day?</h3>
-        <div class="goalopts">${E.GOALS.map((g) => `<button class="goalopt" data-goal="${g.xp}" aria-pressed="${S.goal === g.xp}">${g.label}<small>${g.sub}</small></button>`).join("")}</div></div>` : ""}
+      ${firstEver && !IN_CLAUDE ? reminderCard() : ""}
+      ${firstEver ? appCard("first_lesson") : ""}
       ${star ? starCard() : ""}
-    </div>`, footerBtn("Continue", "gold"));
-    if (firstEver) document.querySelectorAll(".results [data-goal]").forEach((b) => b.addEventListener("click", () => {
-      const from = S.goal; S.goal = +b.dataset.goal; save();
-      if (from !== S.goal) track("goal_changed", { from_xp: from, to_xp: S.goal, where: "first_lesson" });
-      document.querySelectorAll(".results [data-goal]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-    }));
+    </div>`, nextUp
+      ? `<div class="footer-inner" style="display:flex;flex-direction:column;gap:10px"><button class="btn block gold" id="nextlesson">Next lesson · ${esc(nextUp.title)}</button><button class="btn block ghost" id="next">Done for now</button></div>`
+      : footerBtn("Continue", "gold"));
+    if (firstEver && !IN_CLAUDE) bindReminderCard();
     $(".progress > i") && ($(".progress > i").style.width = "100%");
     $("#next").addEventListener("click", closeRun);
-    $("#next").focus();
+    // Nov 2026 data: 15 people finished lesson 1, 2 ever started lesson 2. Offer it right here.
+    if (nextUp) {
+      $("#nextlesson").addEventListener("click", () => { closeRun(); startNode(nextUp, "next_lesson"); });
+      $("#nextlesson").focus();
+    } else $("#next").focus();
     if (star) bindStarCard(star);
   }
 
@@ -1245,5 +1295,14 @@
   if (TABS.some((t) => t.id === h)) ui.tab = h;
   trackAppOpened();
   render();
+  // First visit to the public site: open lesson 1 right away, so the first screen is a one-tap
+  // question, not a page to read (Nov 2026: half of new visitors left within 8 seconds).
+  // Only once per browser; quitting lands on the Learn tab as before.
+  (function autoStart() {
+    if (IN_CLAUDE || h || Object.keys(S.done).length || S.xp) return;
+    let seen = false;
+    try { seen = !!localStorage.getItem("skepsis.autostart"); localStorage.setItem("skepsis.autostart", "1"); } catch { return; }
+    if (!seen) startNode(E.nextNode(IX, S), "auto");
+  })();
   connect().catch((e) => { console.warn("[greek] connect", e); cloud.ready = true; rerenderTab(); });
 })();
