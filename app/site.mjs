@@ -399,6 +399,8 @@ export function buildSite(appMarkup, outDir) {
       ...["skepsis-psi.vercel.app", "skepsis-ion-petropoulos-projects.vercel.app"].map((host) => ({ src: "/(.*)", has: [{ type: "host", value: host }], status: 308, headers: { Location: `${SITE}/$1` } })),
       { src: "/(.*)", headers: { "X-Content-Type-Options": "nosniff", "Referrer-Policy": "strict-origin-when-cross-origin", "Permissions-Policy": "camera=(), microphone=(), geolocation=()", Vary: "Accept" }, continue: true },
       { src: "/(.*)\\.(png|svg|webmanifest|mp4)", headers: { "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800" }, continue: true },
+      // Google Search Console verification files must answer 200 at their exact .html address, with no redirect.
+      { src: "/(google[0-9a-f]+\\.html)", dest: "/$1", check: true },
       { src: "/index\\.html", status: 308, headers: { Location: "/" } },
       { src: "/(.*)\\.html", status: 308, headers: { Location: "/$1" } },
       { src: "/", has: MD, dest: "/index.md", headers: mdHeaders },
