@@ -86,7 +86,8 @@ export function pages() {
 }
 
 const FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Nunito:wght@400;600;700;800;900&family=Rye&display=swap">';
-const ICONS = '<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#3446c9">';
+// favicon.ico (16/32/48) and the 48/96 PNGs are icon-192.png scaled down; Google Search wants a square icon in multiples of 48px.
+const ICONS = '<link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" href="/favicon-96.png" type="image/png" sizes="96x96"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#3446c9">';
 
 function head({ title, desc, path, type = "website", jsonld = [], noindex = false, keywords = "" }) {
   const url = SITE + path;
