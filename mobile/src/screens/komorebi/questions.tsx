@@ -3,10 +3,9 @@
 // the runner owns scoring and feedback. Japanese is read aloud by the phone's own voice (expo-speech).
 import { useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
-import * as Speech from "expo-speech";
-
 import { Btn, Card, Eyebrow, Icon, T } from "@/components/ui";
 import { haptic } from "@/lib/feedback";
+import { speakJapanese } from "@/lib/japanese-voice";
 import { KE, KIX, type KChoiceQ, type KItem, type KPhrase, type KRomajiQ, type KScenarioQ, type KTilesQ } from "@/komorebi";
 import { Label, Option } from "@/screens/lesson/questions";
 import { font, useTheme } from "@/theme";
@@ -14,8 +13,7 @@ import { font, useTheme } from "@/theme";
 const JA_FONT = "Hiragino Sans";
 
 export function speak(text: string) {
-  Speech.stop();
-  Speech.speak(text, { language: "ja-JP", rate: 0.85 });
+  speakJapanese(text).catch(() => {});
 }
 
 export function SpeakBtn({ text }: { text: string }) {
