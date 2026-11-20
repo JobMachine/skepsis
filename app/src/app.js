@@ -933,8 +933,17 @@
     return `${esc(word.slice(0, i))}<span class="root-hl">${esc(word.slice(i, i + len))}</span>${esc(word.slice(i + len))}`;
   }
 
+  /**
+   * The warm-up is the first screen a new visitor sees (lesson 1 auto-starts). It used to be a bare
+   * quiz with no name and no "what is this": Nov 17-20 2026, most real visitors from LinkedIn/X left
+   * it within 40 seconds without tapping. So it says who we are and what the deal is.
+   */
+  function welcome(q) {
+    if (!q.warmup) return "";
+    return `<section class="hero welcome">${mascot("happy")}<div class="bubble">Howdy, I'm Homer. <b>Skepsis</b> shows you the Greek hiding in everyday English. <span class="muted">5 quick taps, about a minute. No sign-up.</span></div></section>`;
+  }
   function header(q) {
-    return `<div class="qlabel ${q.guess ? "guess" : ""}">${esc(q.label)}${q.guess ? " · no penalty" : ""}</div>`;
+    return `${welcome(q)}<div class="qlabel ${q.guess ? "guess" : ""}">${esc(q.label)}${q.guess ? " · no penalty" : ""}</div>`;
   }
 
   function drawMcq(q) {

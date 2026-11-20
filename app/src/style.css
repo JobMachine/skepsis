@@ -172,6 +172,9 @@ p { margin: 0; }
 
 .hero { display: grid; grid-template-columns: 84px 1fr; gap: 14px; align-items: center; }
 .hero .mascot { width: 84px; height: 84px; }
+.hero.welcome { grid-template-columns: 64px 1fr; margin-bottom: 18px; }
+.hero.welcome .mascot { width: 64px; height: 64px; }
+.hero.welcome .bubble { font-size: 15px; }
 .bubble {
   position: relative; background: var(--surface); border: 2px solid var(--line); border-radius: 16px;
   padding: 12px 14px; font-weight: 700; min-width: 0;
