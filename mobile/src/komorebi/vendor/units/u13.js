@@ -12,7 +12,7 @@ const g=(title,explanation,examples,q,options,answer,why)=>({kind:'grammar',titl
 const c=(title,place,body,q,options,answer,why)=>({kind:'culture',title,place,body,src:general,quiz:{q,options,answer,why},say:body,status:'general'});
 const q=(title,scene,prompt,options,answer)=>({kind:'scenario',title,scene,q:prompt,options:options.map(([text,why])=>({text,why})),answer,transfer:true,say:'Use what you practiced in class to choose the response that fits.',src:general,status:'general'});
 const lesson=(n,title,scene,mission,dialogue,items)=>({id:`u13l${n}`,title,scene,mission,dialogue,items:items.map((item,i)=>({id:`u13-${n}-${i+1}`,...item}))});
-const unit={id:'u13',title:'Lessons',blurb:'Practice what you covered in your live lessons with Risa. A new lesson after each class.',place:'Class with Risa',focus:'Your tutor lessons · self-introduction · word order',lessons:[
+const unit={id:'u13',title:'Lessons',blurb:'Practice what you covered in your live lessons with Risa. A new lesson after each class.',place:'Class with Risa',focus:'Your tutor lessons · self-introduction · word order · verb endings · particles',lessons:[
 
 // Class 1 · Nov 16, 2026 · trial lesson: self-introduction, word order, wa and desu.
 lesson(1,'Class 1 · Watashi wa Ion desu','Your first class with Risa (Nov 16). She asks you to introduce yourself in Japanese.','Say out loud: Watashi wa Ion desu. Girisha-jin desu. Dōzo yoroshiku onegaishimasu. Repeat it until you can say it without looking.',[
@@ -47,6 +47,41 @@ q('When is your birthday?','A new friend asks: お誕生日はいつですか (o
 ['十二月三十日です。 (Jūni-gatsu sanjū-nichi desu.)','December 30th, with desu: a full polite answer.'],
 ['三十日十二月です。 (Sanjū-nichi jūni-gatsu desu.)','In Japanese the month comes before the day.'],
 ['ギリシャ人です。 (Girisha-jin desu.)','That says you are Greek; the question was about your birthday.']],0)
+]),
+
+// Class 2 · Nov 22, 2026 · the four verb endings, then the core particles.
+lesson(3,'Class 2 · Four verb endings','Your second class with Risa (Nov 22). She asks what you did today.','Say out loud: ikimasu, ikimashita, ikimasen, ikimasen deshita. Then tell Risa about your day: Kyōkai ni ikimashita. Sore kara bābekyū o shimashita.',[
+d('Risa',['今日は何をしましたか。','きょうはなにをしましたか。','Kyō wa nani o shimashita ka.','What did you do today?']),
+d('You',['教会に行きました。それからバーベキューをしました。','きょうかいにいきました。それからバーベキューをしました。','Kyōkai ni ikimashita. Sore kara bābekyū o shimashita.','I went to church. After that, I had a barbecue.']),
+d('Risa',['いいですね。','いいですね。','Ii desu ne.','That sounds nice.'])],[
+w(['行きます','いきます','ikimasu','to go / I go'],['to come','to eat','to work'],'Ikimasu is the polite present form of "go". It can also mean "will go". Change only the ending to change the time.'),
+w(['します','します','shimasu','to do / I do'],['to go','to see','to be'],'Shimasu means "do". Put it after a noun to make an activity: bābekyū o shimasu, "have a barbecue".'),
+w(['働きます','はたらきます','hatarakimasu','to work'],['to rest','to study','to travel'],'One of the two ways Risa gave for "work". The other is shigoto o shimasu, literally "do work".'),
+w(['それから','それから','sore kara','and then / after that'],['because','but','before that'],'Use sore kara to connect events in order: this happened, and then that happened.'),
+s(['教会に行きました。それからバーベキューをしました。','きょうかいにいきました。それからバーベキューをしました。','Kyōkai ni ikimashita. Sore kara bābekyū o shimashita.','I went to church. After that, I had a barbecue.'],[['教会','kyōkai'],['に','ni'],['行きました','ikimashita'],['それから','sore kara'],['バーベキュー','bābekyū'],['を','o'],['しました','shimashita']],[['行きません','ikimasen']],'Two finished actions, so both verbs end in -mashita. Each verb closes its own sentence.'),
+g('The four endings','Keep the start of the verb and swap the ending. -masu: do or will do. -mashita: did. -masen: do not or will not. -masen deshita: did not. For desu, the negative is different: ja arimasen, "am not".',[['行きます。','いきます。','Ikimasu.','I go / I will go.'],['行きました。','いきました。','Ikimashita.','I went.'],['行きません。','いきません。','Ikimasen.','I do not go / I will not go.'],['行きませんでした。','いきませんでした。','Ikimasen deshita.','I did not go.']],'How do you say "I did not go"?',['行きませんでした (ikimasen deshita)','行きました (ikimashita)','行きません (ikimasen)'],'行きませんでした (ikimasen deshita)','-masen deshita is the past negative: it did not happen.'),
+c('San and o- show respect','Class 2','Add san after another person\'s name: Risa-san. Do not add it to your own name. In the same way, o- makes a word polite when it concerns the other person: o-namae (your name), o-shigoto (your work). About yourself, say namae and shigoto.','How do you tell someone your name politely?',['イオンです (Ion desu)','イオンさんです (Ion-san desu)','お名前はイオンです (o-namae wa Ion desu)'],'イオンです (Ion desu)','San and the polite o- are for other people, not for yourself.'),
+q('Did you go?','Risa asks: 教会に行きましたか (kyōkai ni ikimashita ka — did you go to church?). This time, you stayed home.','Which answer is correct?',[
+['いいえ、行きませんでした。 (Iie, ikimasen deshita.)','No, I did not go: the past negative fits a question about the past.'],
+['いいえ、行きません。 (Iie, ikimasen.)','This means you do not go or will not go. It does not describe what already happened.'],
+['はい、行きました。 (Hai, ikimashita.)','This says yes, you went, but you stayed home.']],0)
+]),
+
+lesson(4,'Class 2 · Small words, big jobs','Still in class 2. Risa asks where you are from, and you practice the small particles that hold a sentence together.','Say out loud: Nihon-jin ja arimasen. Girisha kara kimashita. Then ask politely: O-tearai wa doko desu ka.',[
+d('Risa',['イオンさんは日本人ですか。','イオンさんはにほんじんですか。','Ion-san wa Nihon-jin desu ka.','Ion, are you Japanese?']),
+d('You',['いいえ、日本人じゃありません。ギリシャから来ました。','いいえ、にほんじんじゃありません。ギリシャからきました。','Iie, Nihon-jin ja arimasen. Girisha kara kimashita.','No, I am not Japanese. I came from Greece.']),
+d('Risa',['そうですか。','そうですか。','Sō desu ka.','Oh, I see.'])],[
+w(['どこ','どこ','doko','where'],['when','who','what'],'Doko asks about a place. Doko desu ka = where is it? Doko kara = from where?'),
+w(['お手洗い','おてあらい','o-tearai','restroom (polite)'],['kitchen','entrance','station'],'A polite word for restroom. Toire (トイレ) is also common and more direct.'),
+w(['先生','せんせい','sensei','teacher'],['student','doctor\'s patient','classmate'],'Sensei means teacher, and you can use it as a title: Risa-sensei. It is also used for doctors.'),
+w(['学生','がくせい','gakusei','student'],['teacher','office worker','tourist'],'Gakusei means student. Watashi wa gakusei desu = I am a student.'),
+s(['お手洗いはどこですか。','おてあらいはどこですか。','O-tearai wa doko desu ka.','Where is the restroom?'],[['お手洗い','o-tearai'],['は','wa'],['どこ','doko'],['です','desu'],['か','ka']],[['を','o']],'Topic + wa + doko + desu, and ka at the very end turns it into a question.'),
+g('Seven particles','Particles come right after the word they mark. は wa: the topic. に ni: to a place. を o: the object. か ka: makes a question. も mo: also, and it replaces wa. ね ne: friendly "right?". から kara: from.',[['教会に行きました。','きょうかいにいきました。','Kyōkai ni ikimashita.','I went to church.'],['バーベキューをしました。','バーベキューをしました。','Bābekyū o shimashita.','I had a barbecue.'],['リサさんは日本人です。ケンさんも日本人です。','リサさんはにほんじんです。ケンさんもにほんじんです。','Risa-san wa Nihon-jin desu. Ken-san mo Nihon-jin desu.','Risa is Japanese. Ken is Japanese too.'],['どこから来ましたか。','どこからきましたか。','Doko kara kimashita ka.','Where did you come from?']],'Which particle completes 教会＿行きました (kyōkai __ ikimashita, "I went to church")?',['に (ni)','を (o)','か (ka)'],'に (ni)','Ni marks the place you go to.'),
+c('Two ways to ask for the restroom','Class 2','Risa showed how the same question changes with the relationship. With staff or someone you do not know well: お手洗いはどこですか (o-tearai wa doko desu ka). With a close friend: トイレ、どこ？ (toire, doko?). Start with the polite version until you know the person well.','Which question fits a close friend?',['トイレ、どこ？ (toire, doko?)','お手洗いはどこですか (o-tearai wa doko desu ka)','お名前は何ですか (o-namae wa nan desu ka)'],'トイレ、どこ？ (toire, doko?)','Short and casual works with a close friend. The polite form is safer with staff and strangers.'),
+q('Me too','At a meetup in Tokyo, someone says: 私はギリシャ人です (watashi wa Girisha-jin desu — I am Greek). You are Greek as well.','What do you say?',[
+['私もギリシャ人です。 (Watashi mo Girisha-jin desu.)','Mo replaces wa and means "I am too".'],
+['私をギリシャ人です。 (Watashi o Girisha-jin desu.)','O marks the object of an action. It does not work with desu here.'],
+['私はギリシャ人ですか。 (Watashi wa Girisha-jin desu ka.)','Ka makes this a question: "Am I Greek?"']],0)
 ])],assessment:[
 {id:'u13-check-1',...q('Meeting Risa again','Your next class starts. Risa says こんにちは (konnichiwa — hello) and asks you to introduce yourself again, briefly.','Which introduction is best?',[
 ['私はイオンです。ギリシャ人です。誕生日は十二月三十日です。 (Watashi wa Ion desu. Girisha-jin desu. Tanjōbi wa jūni-gatsu sanjū-nichi desu.)','Watashi wa once, then short sentences, each ending in desu.'],
