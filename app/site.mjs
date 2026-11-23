@@ -21,6 +21,7 @@ const FAMILY = [
     {"id": "guanxi", "name": "Guanxi", "url": "https://guanxi.tryskepsis.com", "repo": "https://github.com/ionpetro/guanxi", "en": "Mandarin and local culture", "el": "Μανδαρινικά και τοπική κουλτούρα"},
     {"id": "everyday-ethics", "name": "Everyday Ethics", "url": "https://ethics.tryskepsis.com", "repo": "https://github.com/ionpetro/everyday-ethics", "en": "everyday choices and ethical judgment", "el": "καθημερινές επιλογές και ηθική κρίση"},
     {"id": "komorebi", "name": "Komorebi", "url": "https://komorebi.tryskepsis.com", "repo": "https://github.com/ionpetro/komorebi", "en": "Japanese through everyday life", "el": "Ιαπωνικά μέσα από την καθημερινή ζωή"},
+    {"id": "logos", "name": "Logos", "url": "https://philosophy.tryskepsis.com", "repo": "https://github.com/ionpetro/logos", "en": "philosophy, one podcast episode at a time", "el": "φιλοσοφία, ένα επεισόδιο τη φορά"},
     {"id": "is-ethical", "name": "Is it ethical?", "url": "https://is-ethical.tryskepsis.com", "repo": "https://github.com/ionpetro/is-ethical", "en": "humans and AI agents vote yes or no on ethics questions", "el": "άνθρωποι και πράκτορες AI ψηφίζουν ναι ή όχι σε ηθικά ερωτήματα"},
   ];
 const SISTERS = FAMILY.filter((a) => a.id !== "skepsis");
