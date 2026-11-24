@@ -11,7 +11,7 @@ beforeEach(() => resetAll());
 describe("course bridge", () => {
   it("loads the shared lessons and engine", () => {
     expect(IX.items.size).toBeGreaterThan(90);
-    expect(NODES[0].id).toBe("u1l1");
+    expect(NODES[0].id).toBe("u1l0");
     expect(E.buildLesson(IX, getState(), "u1l1", 1).length).toBeGreaterThan(5);
   });
 

@@ -20,6 +20,41 @@ const COURSE = {
       blurb: "The phone in your pocket is full of Greek.",
       lessons: [
         {
+          id: "u1l0",
+          title: "Love, Greek style",
+          items: [
+            {
+              id: "eros", kind: "root", root: "erot", gr: "ἔρως", tr: "erōs", m: "romantic love, desire",
+              hook: "Eros was the Greek god of desire; the Romans renamed him Cupid. Every country song about falling hard at a honky-tonk is pure eros.",
+              say: "Eros is Greek for romantic love. Erotic means full of desire; Eros was its god, Cupid to the Romans.",
+              ex: [
+                ["erotic", "full of romantic or physical desire", ["erot", "ic"]],
+                ["erotica", "writing or art about desire", ["erot", "ica"]],
+                ["erotomania", "the false belief that someone is secretly in love with you", ["eroto", "mania"]],
+              ],
+            },
+            {
+              id: "phil", kind: "root", root: "phil", gr: "φίλος", tr: "philos", m: "loving, friend",
+              hook: "Philadelphia is 'brotherly love'. Texas has its own: strangers sharing a table at Whataburger after a Friday night game.",
+              say: "Phil means love. Philosophy: love of wisdom. Philanthropy: love of people.",
+              ex: [
+                ["philosophy", "the love of wisdom", ["philo", "sophy"]],
+                ["Philadelphia", "the city of 'brotherly love'", ["Phil", "adelphia"]],
+                ["bibliophile", "a person who loves books", ["biblio", "phile"]],
+              ],
+            },
+            {
+              id: "agape", kind: "idea", term: "agape", gr: "ἀγάπη", tr: "agapē", lit: "love",
+              m: "Selfless love that gives without asking anything back",
+              story: "The Greeks had several words for love: eros for desire, philia for friendship, storgē for family, and agapē for love that gives without keeping score. Early Christians made agapē their word for God's love and for the shared 'love feast' meal, and English borrowed it as agape.",
+              tex: "Driving three hours to help your cousin move, then staying for brisket and dishes: that's agape.",
+              work: "When someone covers your shift without being asked, call it out: 'That was pure agape.'",
+              say: "Agape is the Greek word for selfless love, the kind that gives without keeping score.",
+              q: { prompt: "A neighbor mows your lawn every week while you're in the hospital and won't take a dime. Which Greek love is that?", a: "agape: selfless love that gives without asking back", w: ["eros: romantic desire", "phobia: fear", "xenia: a guest's duty to a host"] },
+            },
+          ],
+        },
+        {
           id: "u1l1",
           title: "Calling long distance",
           items: [
@@ -595,18 +630,8 @@ const COURSE = {
       lessons: [
         {
           id: "u6l1",
-          title: "Brotherly love",
+          title: "Fear and strangers",
           items: [
-            {
-              id: "phil", kind: "root", root: "phil", gr: "φίλος", tr: "philos", m: "loving, friend",
-              hook: "Philadelphia is 'brotherly love'. Texas has its own: strangers sharing a table at Whataburger after a Friday night game.",
-              say: "Phil means love. Philosophy: love of wisdom. Philanthropy: love of people.",
-              ex: [
-                ["philosophy", "the love of wisdom", ["philo", "sophy"]],
-                ["Philadelphia", "the city of 'brotherly love'", ["Phil", "adelphia"]],
-                ["bibliophile", "a person who loves books", ["biblio", "phile"]],
-              ],
-            },
             {
               id: "phob", kind: "root", root: "phob", gr: "φόβος", tr: "phobos", m: "fear",
               hook: "Arachnophobia: fear of spiders. A Texas tarantula season will test it.",

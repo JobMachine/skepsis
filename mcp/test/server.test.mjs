@@ -63,10 +63,10 @@ test("runs a full lesson to the end and saves progress", async () => {
   assert.match(p.text, /XP: 1\d total/);
   assert.match(p.text, /Streak: 1 days/);
   const saved = JSON.parse(fs.readFileSync(path.join(home, "progress.json"), "utf8"));
-  assert.ok(saved.done.u1l1, "lesson u1l1 marked done on disk");
+  assert.ok(saved.done.u1l0, "lesson u1l0 marked done on disk");
   const list = await call("list_course");
-  assert.match(list.text, /✓ u1l1/);
-  assert.match(list.text, /u1l2 .*← next/);
+  assert.match(list.text, /✓ u1l0/);
+  assert.match(list.text, /u1l1 .*← next/);
 });
 
 test("review works once something is learned", async () => {
