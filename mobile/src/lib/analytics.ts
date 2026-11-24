@@ -18,7 +18,10 @@ const HOST = (process.env.EXPO_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com"
 // Development builds don't send (so testing never pollutes real numbers) unless you opt in
 // with EXPO_PUBLIC_ANALYTICS_IN_DEV=1, which also logs each batch to the console.
 const DEV_SEND = process.env.EXPO_PUBLIC_ANALYTICS_IN_DEV === "1";
-const ENABLED = /^phc_[A-Za-z0-9]+$/.test(KEY) && (!__DEV__ || DEV_SEND);
+// The private build (EXPO_PUBLIC_PRIVATE_COURSES=1, the owner's own phone) never sends anything,
+// even if a key is present in the environment.
+const PRIVATE_BUILD = process.env.EXPO_PUBLIC_PRIVATE_COURSES === "1";
+const ENABLED = !PRIVATE_BUILD && /^phc_[A-Za-z0-9]+$/.test(KEY) && (!__DEV__ || DEV_SEND);
 
 type Props = Record<string, string | number | boolean | null | undefined>;
 type Event = { event: string; properties: Props; timestamp: string };

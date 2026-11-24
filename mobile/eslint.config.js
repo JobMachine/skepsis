@@ -5,6 +5,6 @@ const expoConfig = require('eslint-config-expo/flat');
 module.exports = defineConfig([
   expoConfig,
   {
-    ignores: ['dist/*', 'src/komorebi/vendor/*'],
+    ignores: ['dist/*', 'src/komorebi/vendor/*', 'src/logos/vendor/*'],
   },
 ]);

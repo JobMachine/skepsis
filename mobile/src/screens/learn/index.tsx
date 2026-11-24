@@ -11,31 +11,15 @@ import { track } from "@/lib/analytics";
 import { haptic } from "@/lib/feedback";
 import { startNode, startPractice, startRodeo } from "@/lib/nav";
 import { questStatus } from "@/lib/quests";
-import { update, useApp } from "@/lib/store";
+import { useApp } from "@/lib/store";
 import { useTheme } from "@/theme";
-import { KomorebiLearn } from "@/screens/komorebi/learn";
 import { Trail } from "./trail";
 
-/** Pick the course: Skepsis (Greek roots) or Komorebi (Japanese). */
-function CourseSwitch({ course }: { course: "skepsis" | "komorebi" }) {
-  const c = useTheme();
-  const opts = [{ id: "skepsis", label: "Greek roots", sub: "Skepsis" }, { id: "komorebi", label: "Japanese", sub: "Komorebi" }] as const;
-  return (
-    <View accessibilityRole="tablist" style={{ flexDirection: "row", gap: 6, padding: 4, borderRadius: 14, backgroundColor: c.surface2 }}>
-      {opts.map((o) => {
-        const on = course === o.id;
-        return (
-          <Pressable key={o.id} accessibilityRole="tab" accessibilityState={{ selected: on }} accessibilityLabel={`${o.sub}, ${o.label}`}
-            onPress={() => { if (on) return; haptic.tap(); track("course_switched", { course: o.id }); update((s) => { s.course = o.id; }); }}
-            style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 11, borderCurve: "continuous", backgroundColor: on ? c.surface : "transparent", boxShadow: on ? "0 1px 3px rgba(0,0,0,0.12)" : undefined }}>
-            <T w="black" size={15} color={on ? c.brand : c.muted}>{o.label}</T>
-            <T w="bold" size={11} color={c.muted}>{o.sub}</T>
-          </Pressable>
-        );
-      })}
-    </View>
-  );
-}
+// Private courses (the course switch, Japanese, philosophy) exist only in private builds. The env
+// check is inline so Metro drops the require, and with it every private screen, from public builds.
+const priv: typeof import("./private-courses") | null =
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  process.env.EXPO_PUBLIC_PRIVATE_COURSES === "1" ? require("./private-courses") : null;
 
 /** Same item for everyone on a given day (matches the website). */
 export function rootOfDay(today: string): IndexedItem {
@@ -86,8 +70,8 @@ export function Learn() {
 
   return (
     <ScrollView ref={scroll} contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ padding: 16, gap: 18, paddingBottom: 48 }}>
-      <CourseSwitch course={s.course} />
-      {s.course === "komorebi" ? <KomorebiLearn /> : <>
+      {priv && <priv.CourseSwitch course={s.course} />}
+      {priv && s.course !== "skepsis" ? <priv.PrivateCourse course={s.course} /> : <>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
         <Mascot mood={met ? "cheer" : "happy"} hat={s.hat} size={84} />
         <Bubble text={greet} />

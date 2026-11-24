@@ -62,7 +62,10 @@
     "release:ios": "npx -y eas-cli@27.2.0 build -p ios --profile production --auto-submit",
     "store:push": "npx -y eas-cli@27.2.0 metadata:push",
     "store:lint": "npx -y eas-cli@27.2.0 metadata:lint",
-    "komorebi:sync": "node scripts/sync-komorebi.mjs"
+    "komorebi:sync": "node scripts/sync-komorebi.mjs",
+    "logos:sync": "node scripts/sync-logos.mjs",
+    "ios:private": "APPLE_TEAM_ID=${APPLE_TEAM_ID:?set APPLE_TEAM_ID to your Apple team id} APP_VARIANT=dev EXPO_PUBLIC_PRIVATE_COURSES=1 EXPO_PUBLIC_POSTHOG_KEY= expo prebuild -p ios --clean && APP_VARIANT=dev EXPO_PUBLIC_PRIVATE_COURSES=1 EXPO_PUBLIC_POSTHOG_KEY= expo run:ios --configuration Release --device",
+    "check:public": "node scripts/check-public-bundle.mjs"
   },
   "private": true,
   "jest": {

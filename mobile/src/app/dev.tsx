@@ -14,10 +14,12 @@ function resetState(s: AppState) {
 }
 
 export default function Dev() {
-  const { to = "/", fresh, blank } = useLocalSearchParams<{ to?: string; fresh?: string; blank?: string }>();
+  const { to = "/", fresh, blank, course } = useLocalSearchParams<{ to?: string; fresh?: string; blank?: string; course?: string }>();
   useEffect(() => {
     if (!__DEV__) { router.replace("/"); return; }
     update((s) => {
+      // ?course=logos picks the Learn tab's course (private builds only act on it; public ones show Skepsis).
+      if (course) s.course = course as AppState["course"];
       if (fresh) { s.onboarded = false; return; }
       if (blank) { resetState(s); s.onboarded = true; return; }
       const t = E.dayKey();
@@ -35,6 +37,6 @@ export default function Dev() {
       q.progress[q.ids[0]] = questById(q.ids[0]).target; q.progress[q.ids[1]] = 1;
     });
     router.replace(to as Href);
-  }, [fresh, blank, to]);
+  }, [fresh, blank, to, course]);
   return null;
 }

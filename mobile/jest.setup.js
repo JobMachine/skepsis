@@ -1,4 +1,7 @@
 /* global jest */
+// Tests run as the private build (all courses) unless a test switches the gate itself
+// (see src/lib/private-courses.test.ts, which loads the app both ways).
+process.env.EXPO_PUBLIC_PRIVATE_COURSES = "1";
 // Test doubles for native modules the game logic touches. Keep these tiny and honest.
 const mockMem = new Map();
 jest.mock("expo-sqlite/localStorage/install", () => {

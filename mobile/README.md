@@ -41,12 +41,25 @@ npm run typecheck && npm run lint && npm test
 
 Dev helpers (development builds only): `skepsis://dev?to=/` loads demo progress, `/lesson?mode=lesson&node=u1l1&auto=1` plays a lesson by itself.
 
+## The private build (Japanese and philosophy)
+
+The App Store app is only the Greek course. The owner's own phone runs a second build, "Skepsis Private" (bundle id `com.ionpetro.skepsis.dev`, never the App Store id), with a Learn-tab switch for Greek roots, Japanese (Komorebi) and philosophy (Logos, an unofficial companion to the Philosophize This! podcast). Those courses are compiled out of every other build, and analytics are off in the private one.
+
+```bash
+npm run komorebi:sync && npm run logos:sync   # copy the latest courses (new Logos episodes arrive this way)
+APPLE_TEAM_ID=<team id> npm run ios:private -- <device id>   # prebuild, build Release, install on the connected iPhone
+npm run check:public                          # before an App Store release: proves the public bundle has no private course
+```
+
+Find the device id with `xcrun xctrace list devices` (the long hardware id). The phone must be unlocked, trusted, in Developer Mode, and signed in to your Apple team in Xcode. Progress in the private app is separate from the App Store app (different bundle id).
+
 ## Layout
 
 | Path | What |
 |---|---|
 | `src/app/` | Routes only (Expo Router): tabs, lesson, rodeo, sheets |
-| `src/screens/` | Screen bodies (learn, lesson, rodeo, quests, words, me, onboarding) |
+| `src/screens/` | Screen bodies (learn, lesson, rodeo, quests, words, me, onboarding; `komorebi/` and `logos/` are private-build only) |
+| `src/komorebi/`, `src/logos/` | Private courses: typed wrappers over synced `vendor/` copies |
 | `src/components/` | Shared UI: Homer (`mascot.tsx`), laurels, buttons, confetti |
 | `src/lib/` | Store, quests, scoring, sounds/haptics, analytics, reminders |
 | `src/course/` | Types and the bridge to the shared course files |

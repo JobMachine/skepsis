@@ -2,7 +2,7 @@
   "expo": {
     "name": "Skepsis",
     "slug": "skepsis",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Learn the Greek roots, myths and big ideas hiding in everyday English, in 3-minute lessons. Free, open source, and your progress never leaves your phone.",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",

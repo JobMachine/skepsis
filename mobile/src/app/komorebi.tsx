@@ -1,8 +1,13 @@
-import { useLocalSearchParams } from "expo-router";
+import { Redirect, useLocalSearchParams } from "expo-router";
 
-import { KomorebiRunner } from "@/screens/komorebi/runner";
+// Private courses only. The inline env check keeps the runner (and Komorebi) out of public builds,
+// where this route just sends you home.
+const Runner: typeof import("@/screens/komorebi/runner").KomorebiRunner | null =
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  process.env.EXPO_PUBLIC_PRIVATE_COURSES === "1" ? require("@/screens/komorebi/runner").KomorebiRunner : null;
 
-export default function KomorebiScreen() {
+export default function PrivateCourseRoute() {
   const { lesson, review } = useLocalSearchParams<{ lesson?: string; review?: string }>();
-  return <KomorebiRunner key={`${lesson ?? ""}-${review ?? ""}`} lessonId={lesson} review={review === "1"} />;
+  if (!Runner) return <Redirect href="/" />;
+  return <Runner key={`${lesson ?? ""}-${review ?? ""}`} lessonId={lesson} review={review === "1"} />;
 }

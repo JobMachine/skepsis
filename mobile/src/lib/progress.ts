@@ -8,7 +8,13 @@ import { questEvent } from "./quests";
 import { reschedule } from "./reminders";
 import { getState, update } from "./store";
 
-export type Mode = "lesson" | "roundup" | "practice" | "rodeo" | "komorebi" | "komorebi-review";
+// Private-course modes only run in private builds (see private-courses.ts).
+export type Mode = "lesson" | "roundup" | "practice" | "rodeo" | "komorebi" | "komorebi-review" | "logos" | "logos-refresh" | "logos-exam";
+
+// The inline env check is deliberate: it lets Metro strip the private courses from public builds.
+const priv: typeof import("./private-courses") | null =
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  process.env.EXPO_PUBLIC_PRIVATE_COURSES === "1" ? require("./private-courses") : null;
 
 export type RunSummary = {
   mode: Mode; nodeId?: string; unitId?: string;
@@ -21,6 +27,8 @@ export type Outcome = {
   xp: number; drachmas: number; perfect: boolean; accuracy: number;
   streak: number; streakUp: boolean; firstToday: boolean; usedFreeze: number;
   badges: Badge[]; goalMetNow: boolean; newBest?: boolean;
+  /** A private course's own badges earned by this run. */
+  courseBadges?: { id: string; name: string; desc: string }[];
 };
 
 export function finishRun(r: RunSummary): Outcome {
@@ -30,6 +38,7 @@ export function finishRun(r: RunSummary): Outcome {
   const goalBefore = (before.days[t] || 0) >= before.goal;
   const perfect = r.misses === 0;
   let out!: Outcome;
+  let pr = null as ReturnType<NonNullable<typeof priv>["applyRun"]>;
 
   update((s) => {
     let xp: number, coins: number, newBest: boolean | undefined;
@@ -39,22 +48,15 @@ export function finishRun(r: RunSummary): Outcome {
       xp = Math.min(r.right, 20);
       coins = Math.floor(r.right / 2) + (newBest && r.right > 0 ? 5 : 0);
       questEvent(s, "rodeo", r.right);
-    } else if (r.mode === "komorebi" || r.mode === "komorebi-review") {
-      // Same rewards as a Skepsis lesson/practice; Komorebi's own lesson record gets the progress.
-      const review = r.mode === "komorebi-review";
-      xp = (review ? 8 : 10) + (perfect ? 5 : 0) + (r.maxCombo >= 5 ? 2 : 0);
-      coins = 5 + (perfect ? 5 : 0);
-      if (!review && r.nodeId) {
-        const k = s.komorebi;
-        if (!k.done[r.nodeId]) k.sittings[r.nodeId] = (k.sittings[r.nodeId] || 0) + 1;
-        if (r.lessonDone) k.done[r.nodeId] = { perfect, at: t };
-      }
-      if (review) { s.practices += 1; questEvent(s, "practice", 1); }
+    } else if ((pr = priv?.applyRun(s, r, t, perfect) ?? null)) {
+      xp = pr.xp;
+      coins = pr.coins;
+      if (pr.practice) { s.practices += 1; questEvent(s, "practice", 1); }
       s.lessonsFinished += 1;
       questEvent(s, "lessons", 1);
-      if (perfect) questEvent(s, "perfect", 1);
+      if (perfect && pr.perfectQuest) questEvent(s, "perfect", 1);
     } else {
-      xp = { lesson: 10, roundup: 15, practice: 8 }[r.mode] + (perfect ? 5 : 0) + (r.maxCombo >= 5 ? 2 : 0);
+      xp = ({ lesson: 10, roundup: 15, practice: 8 } as Record<string, number>)[r.mode] + (perfect ? 5 : 0) + (r.maxCombo >= 5 ? 2 : 0);
       coins = 5 + (perfect ? 5 : 0) + (r.mode === "roundup" ? 10 : 0);
       if (r.mode === "practice") { s.practices += 1; questEvent(s, "practice", 1); }
       if (r.nodeId && (r.mode === "lesson" || r.mode === "roundup")) s.done[r.nodeId] = { perfect, at: t };
@@ -74,12 +76,13 @@ export function finishRun(r: RunSummary): Outcome {
       xp, drachmas: coins, perfect, accuracy: r.scored ? r.right / r.scored : 1,
       streak: s.streak, streakUp: st.streakUp, firstToday: firstToday && st.streakUp, usedFreeze: st.usedFreeze,
       badges, goalMetNow: !goalBefore && (s.days[t] || 0) >= s.goal, newBest,
+      courseBadges: pr?.courseBadges,
     };
   });
 
   const s = getState();
   track(r.mode === "rodeo" ? "rodeo_finished" : "lesson_completed", {
-    mode: r.mode, course: r.mode.startsWith("komorebi") ? "komorebi" : "skepsis", lesson_id: r.nodeId ?? null, unit_id: r.unitId ?? null, accuracy: out.accuracy, perfect, xp: out.xp,
+    mode: r.mode, course: priv?.courseOf(r.mode) ?? "skepsis", lesson_id: r.nodeId ?? null, unit_id: r.unitId ?? null, accuracy: out.accuracy, perfect, xp: out.xp,
     drachmas: out.drachmas, seconds: r.seconds, max_combo: r.maxCombo, streak: s.streak, used_freeze: out.usedFreeze > 0,
     total_xp: s.xp, learned: Object.keys(s.items).length, rides: r.mode === "rodeo" ? r.right : undefined, new_best: out.newBest,
   });
