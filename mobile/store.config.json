@@ -1,7 +1,7 @@
 {
   "configVersion": 0,
   "apple": {
-    "version": "1.1.1",
+    "version": "1.1.2",
     "copyright": "2026 The Good Lyfe Consulting Group LLC",
     "categories": [
       "EDUCATION",
@@ -28,7 +28,7 @@
           "quiz",
           "origins"
         ],
-        "releaseNotes": "Skepsis is now focused on what it does best: the Greek hiding in everyday English. The Japanese course has been removed from this app. Your XP, streak and Greek progress are unchanged.",
+        "releaseNotes": "New first lesson: Love, Greek style. Learn eros, phil and agape, the Greek behind erotic, philosophy and selfless love, in about two minutes. Your XP, streak and progress are unchanged.",
         "marketingUrl": "https://tryskepsis.com",
         "supportUrl": "https://github.com/ionpetro/skepsis/issues",
         "privacyPolicyUrl": "https://github.com/ionpetro/skepsis/blob/main/mobile/PRIVACY.md",
