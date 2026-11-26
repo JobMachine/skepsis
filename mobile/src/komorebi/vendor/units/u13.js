@@ -12,7 +12,7 @@ const g=(title,explanation,examples,q,options,answer,why)=>({kind:'grammar',titl
 const c=(title,place,body,q,options,answer,why)=>({kind:'culture',title,place,body,src:general,quiz:{q,options,answer,why},say:body,status:'general'});
 const q=(title,scene,prompt,options,answer)=>({kind:'scenario',title,scene,q:prompt,options:options.map(([text,why])=>({text,why})),answer,transfer:true,say:'Use what you practiced in class to choose the response that fits.',src:general,status:'general'});
 const lesson=(n,title,scene,mission,dialogue,items)=>({id:`u13l${n}`,title,scene,mission,dialogue,items:items.map((item,i)=>({id:`u13-${n}-${i+1}`,...item}))});
-const unit={id:'u13',title:'Lessons',blurb:'Practice what you covered in your live lessons with Risa. A new lesson after each class.',place:'Class with Risa',focus:'Your tutor lessons · self-introduction · word order · verb endings · particles',lessons:[
+const unit={id:'u13',title:'Lessons',blurb:'Practice what you covered in your live lessons with Risa. A new lesson after each class.',place:'Class with Risa',focus:'Your tutor lessons · self-introduction · word order · verb endings · particles · questions · counting people',lessons:[
 
 // Class 1 · Nov 16, 2026 · trial lesson: self-introduction, word order, wa and desu.
 lesson(1,'Class 1 · Watashi wa Ion desu','Your first class with Risa (Nov 16). She asks you to introduce yourself in Japanese.','Say out loud: Watashi wa Ion desu. Girisha-jin desu. Dōzo yoroshiku onegaishimasu. Repeat it until you can say it without looking.',[
@@ -82,6 +82,43 @@ q('Me too','At a meetup in Tokyo, someone says: 私はギリシャ人です (wat
 ['私もギリシャ人です。 (Watashi mo Girisha-jin desu.)','Mo replaces wa and means "I am too".'],
 ['私をギリシャ人です。 (Watashi o Girisha-jin desu.)','O marks the object of an action. It does not work with desu here.'],
 ['私はギリシャ人ですか。 (Watashi wa Girisha-jin desu ka.)','Ka makes this a question: "Am I Greek?"']],0)
+]),
+
+// Class 3 · Nov 25, 2026 · question words, time words, imasu vs arimasu, counting people and ages.
+lesson(5,'Class 3 · Ask anything with nan desu ka','Your third class with Risa (Nov 25). She asks you basic questions, and you learn to answer by swapping one word.','Say out loud: O-namae wa nan desu ka. Ion desu. O-shigoto wa nan desu ka. Gakusei desu. Notice that only the last word changes.',[
+d('Risa',['お名前は何ですか。','おなまえはなんですか。','O-namae wa nan desu ka.','What is your name?']),
+d('You',['イオンです。','イオンです。','Ion desu.','I am Ion.']),
+d('Risa',['お仕事は何ですか。','おしごとはなんですか。','O-shigoto wa nan desu ka.','What is your job?']),
+d('You',['学生です。','がくせいです。','Gakusei desu.','I am a student.'])],[
+w(['何','なに / なん','nani / nan','what'],['who','where','when'],'何 is read nani on its own and nan before desu: nan desu ka, "what is it?".'),
+w(['名前','なまえ','namae','name'],['age','job','birthday'],'Namae = name. Asking someone else, add o-: o-namae wa nan desu ka.'),
+w(['仕事','しごと','shigoto','job, work'],['school','hobby','home'],'Shigoto = work or job. Politely about someone else: o-shigoto.'),
+w(['元気','げんき','genki','well, healthy, energetic'],['tired','busy','hungry'],'O-genki desu ka = how are you? Answer: genki desu, I am well.'),
+s(['お仕事は何ですか。','おしごとはなんですか。','O-shigoto wa nan desu ka.','What is your job?'],[['お仕事','o-shigoto'],['は','wa'],['何','nan'],['です','desu'],['か','ka']],[['を','o']],'Topic + wa + nan + desu + ka. The same frame asks almost anything.'),
+g('Answer by copy and paste','Risa\'s trick: one frame, "topic wa nan desu ka", asks many questions. To answer, drop the ka, put your answer where nan was, and keep desu. You can also drop the topic, because it is already clear.',[['お名前は何ですか。','おなまえはなんですか。','O-namae wa nan desu ka.','What is your name?'],['イオンです。','イオンです。','Ion desu.','I am Ion.'],['何歳ですか。','なんさいですか。','Nan-sai desu ka.','How old are you?'],['二十八歳です。','にじゅうはっさいです。','Nijū-has-sai desu.','I am 28.']],'Risa asks お仕事は何ですか (o-shigoto wa nan desu ka). Which answer follows the pattern?',['学生です (gakusei desu)','学生ですか (gakusei desu ka)','何学生です (nan gakusei desu)'],'学生です (gakusei desu)','Replace nan with the answer and drop ka.'),
+c('Polite first, casual later','Class 3','Risa said the polite -masu and desu forms are safe everywhere, and that is what you will learn first. At school and work people start polite and switch to casual only as they get close. Two polite touches: oikutsu desu ka is the polite way to ask an age (nan-sai desu ka is plainer), and a subject everyone already knows, like "you", is simply left out.','A shop owner you just met asks your age. Which question would they most likely use?',['おいくつですか (oikutsu desu ka)','何歳？ (nan-sai?)','あなたは何歳ですか (anata wa nan-sai desu ka)'],'おいくつですか (oikutsu desu ka)','Oikutsu is the polite way. Anata, "you", is usually left out.'),
+q('A new classmate','In a class in Tokyo, a classmate asks: お仕事は何ですか (o-shigoto wa nan desu ka — what is your job?).','Which answer works?',[
+['学生です。 (Gakusei desu.)','Your answer where nan was, plus desu: exactly the copy-paste pattern.'],
+['学生さんです。 (Gakusei-san desu.)','San is a title for other people, never for yourself.'],
+['お仕事は学生ですか。 (O-shigoto wa gakusei desu ka.)','This asks a question back instead of answering.']],0)
+]),
+
+lesson(6,'Class 3 · Who, when and how many','Still in class 3. Risa asks who you came with, and you count people and talk about days.','Say out loud: kinō, kyō, ashita. Then: hitori, futari, san-nin. Then: Neko ga imasu. Hon ga arimasu.',[
+d('Risa',['今日は誰と来ましたか。','きょうはだれときましたか。','Kyō wa dare to kimashita ka.','Who did you come with today?']),
+d('You',['友達と来ました。','ともだちときました。','Tomodachi to kimashita.','I came with a friend.']),
+d('Risa',['何人いますか。','なんにんいますか。','Nan-nin imasu ka.','How many people are there?']),
+d('You',['二人います。','ふたりいます。','Futari imasu.','There are two of us.'])],[
+w(['今日','きょう','kyō','today'],['tomorrow','yesterday','now'],'今 (now) + 日 (day), but the pair has its own reading: kyō, not "ima-hi".'),
+w(['明日','あした','ashita','tomorrow'],['today','yesterday','next week'],'Ashita = tomorrow. With kyō and kinō you have three days in a row.'),
+w(['昨日','きのう','kinō','yesterday'],['tomorrow','today','last year'],'Kinō = yesterday. It goes well with -mashita: kinō ikimashita, I went yesterday.'),
+w(['誰','だれ','dare','who'],['what','where','when'],'Dare = who. Dare to = with whom. To (と) after a person means "with".'),
+s(['子供が何人いますか。','こどもがなんにんいますか。','Kodomo ga nan-nin imasu ka.','How many children do you have?'],[['子供','kodomo'],['が','ga'],['何人','nan-nin'],['います','imasu'],['か','ka']],[['あります','arimasu']],'People are alive, so the verb is imasu. Nan-nin asks how many people.'),
+g('Imasu or arimasu, and counting people','Both mean "there is" or "I have". Imasu is for living things: people and animals. Arimasu is for things. To count people add nin, but 1 and 2 are special: hitori, futari. From 3 it is regular: san-nin, yo-nin, go-nin.',[['猫がいます。','ねこがいます。','Neko ga imasu.','There is a cat.'],['本があります。','ほんがあります。','Hon ga arimasu.','There is a book.'],['一人います。','ひとりいます。','Hitori imasu.','There is one person.'],['三人います。','さんにんいます。','San-nin imasu.','There are three people.']],'Which sentence is correct for "There are two students"?',['学生が二人います (gakusei ga futari imasu)','学生が二人あります (gakusei ga futari arimasu)','学生が二つあります (gakusei ga futatsu arimasu)'],'学生が二人います (gakusei ga futari imasu)','Students are people, so imasu, and two people is futari.'),
+c('Kanji are built like Greek words','Class 3','You noticed that kanji combine meanings the way Greek roots do. 先生 (sensei, teacher) is 先 "ahead" + 生 "born": someone who came before you. 学 means study, and it appears in 学生 (gakusei, student) and 学校 (gakkō, school). Seeing kanji next to the reading, again and again, builds recognition long before you can write them.','Which word shares the kanji 学 (study) with 学生 (gakusei, student)?',['学校 (gakkō, school)','先生 (sensei, teacher)','今日 (kyō, today)'],'学校 (gakkō, school)','学 appears in both: a student is a study-person, a school is a study-place.'),
+q('Who is at the table?','At a family dinner in Osaka, the host asks: 何人いますか (nan-nin imasu ka — how many people are there?). You count yourself and one friend.','What do you answer?',[
+['二人います。 (Futari imasu.)','Two people is futari, and people take imasu.'],
+['二人あります。 (Futari arimasu.)','Arimasu is for things. People take imasu.'],
+['二つあります。 (Futatsu arimasu.)','Futatsu counts things, not people.']],0)
 ])],assessment:[
 {id:'u13-check-1',...q('Meeting Risa again','Your next class starts. Risa says こんにちは (konnichiwa — hello) and asks you to introduce yourself again, briefly.','Which introduction is best?',[
 ['私はイオンです。ギリシャ人です。誕生日は十二月三十日です。 (Watashi wa Ion desu. Girisha-jin desu. Tanjōbi wa jūni-gatsu sanjū-nichi desu.)','Watashi wa once, then short sentences, each ending in desu.'],
