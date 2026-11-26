@@ -415,7 +415,7 @@ const Engine = (() => {
   /** The groups the timeline colors thinkers by. */
   const SCHOOLS = {
     milesian: "Milesians", ephesian: "A loner, no school", pythagorean: "Pythagoreans", eleatic: "Eleatics",
-    pluralist: "Pluralists", atomist: "Atomists", sophist: "Sophists", socratic: "Socrates",
+    pluralist: "Pluralists", atomist: "Atomists", sophist: "Sophists", socratic: "Socrates", platonic: "Plato's Academy", peripatetic: "Aristotle's school",
   };
   const fmtYear = (y) => (y < 0 ? `${-y} BCE` : `${y} CE`);
   /** Every thinker once (first listing wins), with the episodes they appear in, oldest first. */
@@ -450,10 +450,10 @@ const Engine = (() => {
   /**
    * Groups that overlap, so they are never offered as a wrong answer for each other: atomists are a kind
    * of pluralist, and some thinkers also drew on a second group (Empedocles on the Pythagoreans and
-   * Parmenides, Parmenides on a Pythagorean teacher).
+   * Parmenides, Parmenides on a Pythagorean teacher, Plato on Socrates, Aristotle on Plato's Academy).
    */
   const SCHOOL_OVERLAP = { atomist: ["pluralist"], pluralist: ["atomist"] };
-  const PERSON_OVERLAP = { empedocles: ["pythagorean", "eleatic"], parmenides: ["pythagorean"] };
+  const PERSON_OVERLAP = { empedocles: ["pythagorean", "eleatic"], parmenides: ["pythagorean"], plato: ["socratic"], aristotle: ["platonic"] };
   /** "Which group is Parmenides usually placed with?", against the other groups in the course that do not also fit. */
   function qSchool(p, everyone, r) {
     if (!SCHOOLS[p.school]) return null;
